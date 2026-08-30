@@ -34,6 +34,9 @@ jobs:
       - name: Patch universal Layers
         run: python3 tools/patch_layers_v2.py
 
+      - name: Patch separate Mesh Layers
+        run: python3 tools/patch_mesh_layers.py
+
       - name: Verify Assimp and Layers pipeline
         run: |
           grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
@@ -43,6 +46,10 @@ jobs:
           grep -q 'id="layerInput"' app/src/main/assets/index.html
           grep -q "registerPrimaryLayer" app/src/main/assets/index.html
           grep -q "addModelLayer" app/src/main/assets/index.html
+          grep -q 'id="meshLayersScreen"' app/src/main/assets/index.html
+          grep -q 'id="meshLayersNav"' app/src/main/assets/index.html
+          grep -q "renderMeshLayers" app/src/main/assets/index.html
+          grep -q "selectMeshLayer" app/src/main/assets/index.html
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

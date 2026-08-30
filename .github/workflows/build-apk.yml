@@ -37,6 +37,8 @@ jobs:
         run: python3 tools/patch_part_axis_lock.py
       - name: Patch Android Part Drag fix
         run: python3 tools/patch_part_drag_android_fix.py
+      - name: Patch Part Transform stability
+        run: python3 tools/patch_part_transform_stability.py
       - name: Patch Project Manager
         run: python3 tools/patch_project_manager.py
       - name: Patch selectable project folder storage
@@ -52,6 +54,7 @@ jobs:
           grep -q 'id="partScaleBtn"' app/src/main/assets/index.html
           grep -q "partTransformAxis" app/src/main/assets/index.html
           grep -q "PART_DRAG_ANDROID_FIX_V2" app/src/main/assets/index.html
+          grep -q "PART_TRANSFORM_STABILITY_V1" app/src/main/assets/index.html
           grep -q 'id="projectsScreen"' app/src/main/assets/index.html
           grep -q 'id="projectFolderBtn"' app/src/main/assets/index.html
           grep -q "chooseProjectFolderSaf" app/src/main/assets/index.html

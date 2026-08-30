@@ -40,6 +40,9 @@ jobs:
       - name: Patch touch Part Drag
         run: python3 tools/patch_part_drag.py
 
+      - name: Patch touch Part Rotate and Scale
+        run: python3 tools/patch_part_rotate_scale.py
+
       - name: Verify Assimp and Layers pipeline
         run: |
           grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
@@ -56,6 +59,11 @@ jobs:
           grep -q 'id="partDragBtn"' app/src/main/assets/index.html
           grep -q "beginPartDrag" app/src/main/assets/index.html
           grep -q "resetSelectedPartPosition" app/src/main/assets/index.html
+          grep -q 'id="partRotateBtn"' app/src/main/assets/index.html
+          grep -q 'id="partScaleBtn"' app/src/main/assets/index.html
+          grep -q "beginPartTransform" app/src/main/assets/index.html
+          grep -q "resetSelectedPartRotation" app/src/main/assets/index.html
+          grep -q "resetSelectedPartScale" app/src/main/assets/index.html
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

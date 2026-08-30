@@ -50,12 +50,29 @@ public class MainActivity extends Activity {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> callback, FileChooserParams params) {
-                if (fileCallback != null) fileCallback.onReceiveValue(null);
+                if (fileCallback != null) {
+                    fileCallback.onReceiveValue(null);
+                }
                 fileCallback = callback;
+
                 try {
-                    Intent intent = params.createIntent();
+                    // Do not use params.createIntent() here. Android WebView turns the
+                    // HTML accept list into MIME filters and can hide .glb/.fbx files.
+                    // ACTION_OPEN_DOCUMENT + */* keeps 3D files visible in Android's picker.
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                    intent.setType("*/*");
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
+                            "model/gltf-binary",
+                            "model/gltf+json",
+                            "application/octet-stream",
+                            "application/x-fbx",
+                            "application/vnd.autodesk.fbx",
+                            "image/png"
+                    });
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+
+                    startActivityForResult(Intent.createChooser(intent, "Pilih GLB / FBX / PNG"), FILE_CHOOSER_REQUEST);
                     return true;
                 } catch (Exception e) {
                     fileCallback = null;
@@ -72,7 +89,22 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_CHOOSER_REQUEST && fileCallback != null) {
-            Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+            Uri[] result = null;
+
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                Uri uri = data.getData();
+                result = new Uri[]{uri};
+
+                // Keep read access for document providers when available.
+                try {
+                    final int takeFlags = data.getFlags() &
+                            (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    getContentResolver().takePersistableUriPermission(uri, takeFlags & Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (Exception ignored) {
+                    // Some providers do not support persistable URI permissions.
+                }
+            }
+
             fileCallback.onReceiveValue(result);
             fileCallback = null;
         }

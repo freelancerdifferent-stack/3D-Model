@@ -28,6 +28,15 @@ jobs:
       - name: Install Android SDK 35
         run: yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
+      - name: Patch FBX parser to Assimp WASM
+        run: python3 tools/patch_fbx_assimp.py
+
+      - name: Verify Assimp FBX pipeline
+        run: |
+          grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
+          grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
+          grep -q "ConvertFileList(fileList,'glb2')" app/src/main/assets/index.html
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:

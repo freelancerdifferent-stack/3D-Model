@@ -19,8 +19,11 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 public class MainActivity extends Activity {
@@ -33,8 +36,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Use the broadly compatible immersive-sticky API. This avoids startup
-        // problems seen on some Android/WebView combinations with WindowInsets.
         enableImmersiveFullscreen();
 
         webView = new WebView(this);
@@ -89,7 +90,85 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.loadUrl("file:///android_asset/index.html");
+        loadEditorHtml();
+    }
+
+    private void loadEditorHtml() {
+        try {
+            String html = readAssetText("index.html");
+
+            // Inject an FBX-only compatibility pass into the existing module code.
+            // GLB loading code is deliberately left unchanged.
+            String marker = "function registerModel(obj,name,animations=[]){";
+            String helper =
+                    "function prepareFBXForViewer(obj){\n" +
+                    "  obj.updateMatrixWorld(true);\n" +
+                    "  obj.traverse(o=>{\n" +
+                    "    if(o.isSkinnedMesh){\n" +
+                    "      o.frustumCulled=false;\n" +
+                    "      try{o.normalizeSkinWeights?.();}catch(e){}\n" +
+                    "      if(o.skeleton){\n" +
+                    "        try{\n" +
+                    "          o.skeleton.pose();\n" +
+                    "          o.skeleton.update();\n" +
+                    "          o.bindMode='attached';\n" +
+                    "          if(o.bindMatrix) o.bind(o.skeleton,o.bindMatrix);\n" +
+                    "        }catch(e){console.warn('FBX skeleton repair',e);}\n" +
+                    "      }\n" +
+                    "      o.updateMatrixWorld(true);\n" +
+                    "    }\n" +
+                    "  });\n" +
+                    "  obj.updateMatrixWorld(true);\n" +
+                    "  return obj;\n" +
+                    "}\n\n";
+
+            if (html.contains(marker) && !html.contains("function prepareFBXForViewer")) {
+                html = html.replace(marker, helper + marker);
+            }
+
+            String oldFbx =
+                    "const obj=await new Promise((res,rej)=>new FBXLoader().load(url,res,undefined,rej));\n" +
+                    "      registerModel(obj,f.name,obj.animations||[]);";
+            String newFbx =
+                    "const obj=await new Promise((res,rej)=>new FBXLoader().load(url,res,undefined,rej));\n" +
+                    "      prepareFBXForViewer(obj);\n" +
+                    "      registerModel(obj,f.name,obj.animations||[]);\n" +
+                    "      requestAnimationFrame(()=>requestAnimationFrame(()=>{\n" +
+                    "        if(root===obj){\n" +
+                    "          prepareFBXForViewer(obj);\n" +
+                    "          centerAndFit(obj);\n" +
+                    "          updateTransformFields();\n" +
+                    "        }\n" +
+                    "      }));";
+
+            if (html.contains(oldFbx)) {
+                html = html.replace(oldFbx, newFbx);
+            }
+
+            webView.loadDataWithBaseURL(
+                    "file:///android_asset/",
+                    html,
+                    "text/html",
+                    "UTF-8",
+                    null
+            );
+        } catch (Exception e) {
+            // Safe fallback: if injection ever fails, open the untouched editor.
+            webView.loadUrl("file:///android_asset/index.html");
+        }
+    }
+
+    private String readAssetText(String fileName) throws Exception {
+        StringBuilder out = new StringBuilder();
+        InputStream input = getAssets().open(fileName);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            out.append(line).append('\n');
+        }
+        reader.close();
+        input.close();
+        return out.toString();
     }
 
     private int fullscreenFlags() {
@@ -139,7 +218,6 @@ public class MainActivity extends Activity {
                         );
                     }
                 } catch (Exception ignored) {
-                    // Not every document provider offers persistable permissions.
                 }
             }
 

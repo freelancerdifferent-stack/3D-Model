@@ -43,6 +43,9 @@ jobs:
       - name: Patch touch Part Rotate and Scale
         run: python3 tools/patch_part_rotate_scale.py
 
+      - name: Patch Part Transform Axis Lock
+        run: python3 tools/patch_part_axis_lock.py
+
       - name: Verify Assimp and Layers pipeline
         run: |
           grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
@@ -64,6 +67,9 @@ jobs:
           grep -q "beginPartTransform" app/src/main/assets/index.html
           grep -q "resetSelectedPartRotation" app/src/main/assets/index.html
           grep -q "resetSelectedPartScale" app/src/main/assets/index.html
+          grep -q 'id="partAxisOverlay"' app/src/main/assets/index.html
+          grep -q "setPartTransformAxis" app/src/main/assets/index.html
+          grep -q "partTransformAxis" app/src/main/assets/index.html
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

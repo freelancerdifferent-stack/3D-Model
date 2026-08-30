@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>3D Viewer & Editor</title>
+<style>
+:root{
+  --bg:#0a0f14;--panel:#121821;--panel2:#18202a;--line:#2a3441;
+  --text:#f5f7fb;--muted:#9ba7b5;--blue:#3d8bfd;--orange:#ff9418;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input,select{font:inherit}
+button{color:inherit;cursor:pointer}
+.app{height:100dvh;display:flex;flex-direction:column}
+.topbar{height:60px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#0f151c;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#62a6ff,#2268c8);display:grid;place-items:center;font-size:22px}
+.brand b{display:block;font-size:15px}.brand span{display:block;color:#67a7ff;font-size:11px}
+.iconbtn{width:40px;height:40px;border:0;border-radius:10px;background:transparent;font-size:20px}
+.content{flex:1;min-height:0;position:relative}
+.screen{display:none;height:100%;overflow:auto}
+.screen.active{display:block}
+.home{padding:14px 14px 88px}
+.titleline{display:flex;align-items:center;justify-content:space-between;margin:4px 0 10px}
+.titleline h2{font-size:16px;margin:0}
+.file-card{display:grid;grid-template-columns:80px 1fr 28px;gap:12px;align-items:center;background:var(--panel2);border:1px solid #212a35;border-radius:14px;padding:10px;margin-bottom:10px}
+.thumb{height:68px;border-radius:10px;background:#252f3a;display:grid;place-items:center;font-size:31px}
+.file-card b{display:block;font-size:14px}.file-card small{display:block;color:var(--muted);margin-top:5px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.qbtn{height:82px;border:1px solid #26313d;background:var(--panel2);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:11px}
+.qbtn i{font-style:normal;font-size:24px}
+.editor{height:100%;display:grid;grid-template-columns:58px 1fr;grid-template-rows:1fr auto}
+.toolrail{grid-row:1/3;display:flex;flex-direction:column;gap:5px;padding:7px 5px;background:#0e141b;border-right:1px solid var(--line);overflow:auto}
+.tool{min-height:56px;border:0;border-radius:10px;background:transparent;font-size:10px;color:#ccd4de}
+.tool b{display:block;font-size:20px;margin-bottom:4px}.tool.active{background:#192535;color:#61a6ff}
+.viewport{position:relative;min-width:0;background:linear-gradient(#252b33,#181e25);overflow:hidden}
+#threeCanvas{width:100%;height:100%;display:block;touch-action:none}
+.overleft,.overright{position:absolute;top:10px;z-index:4}
+.overleft{left:10px}.overright{right:10px}
+.pill{border:1px solid #303a47;background:rgba(14,20,27,.88);border-radius:10px;padding:8px 10px;font-size:12px}
+.viewtools{position:absolute;right:10px;top:64px;z-index:4;background:rgba(14,20,27,.88);border:1px solid #303a47;border-radius:14px;padding:6px}
+.viewtools button{width:52px;height:48px;display:block;border:0;border-radius:9px;background:transparent;font-size:10px}
+.viewtools button strong{display:block;font-size:18px;margin-bottom:2px}.viewtools button.on{background:#214777}
+.timeline{position:absolute;left:8%;right:8%;bottom:12px;height:42px;border-radius:12px;background:rgba(10,14,19,.86);z-index:4;display:flex;gap:9px;align-items:center;padding:0 10px}
+.timeline input{flex:1}
+.props{grid-column:2;max-height:250px;overflow:auto;background:#0f151c;border-top:1px solid var(--line);padding:11px}
+.props h3{font-size:14px;margin:0 0 10px}
+.grid4{display:grid;grid-template-columns:92px repeat(3,minmax(0,1fr));gap:7px}
+.lab{font-size:12px;color:#c5cdd7;display:flex;align-items:center}
+.field{width:100%;min-width:0;height:34px;color:white;border:1px solid #344150;background:#151c24;border-radius:7px;padding:0 8px}
+.bottomnav{height:66px;flex:none;display:grid;grid-template-columns:repeat(5,1fr);background:#0f151c;border-top:1px solid var(--line)}
+.nav{border:0;background:transparent;color:#a8b2be;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}.nav b{font-size:20px}.nav.active{color:#61a6ff;background:#141d28}
+.form{padding:14px 14px 88px}
+.head{display:flex;align-items:center;gap:8px;margin-bottom:16px}.head h2{font-size:17px;margin:0}
+.back{border:0;background:transparent;font-size:24px}
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.fcard{height:105px;border:1px solid #27313d;background:var(--panel2);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.fcard strong{font-size:26px}.fcard small{color:var(--muted)}
+.primary,.outline{width:100%;height:47px;border-radius:9px;margin-top:12px;font-weight:600}
+.primary{border:0;background:linear-gradient(#438ff9,#2d75df)}
+.outline{border:1px solid #4c9cff;color:#6aa9ff;background:transparent}
+.section{border-top:1px solid var(--line);margin-top:22px;padding-top:16px}
+.section h3{font-size:14px;margin:0 0 12px}
+.row{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:12px;margin:11px 0}
+.switch{width:46px;height:27px;border-radius:20px;background:#2b3541;justify-self:end;position:relative}.switch:after{content:"";position:absolute;width:21px;height:21px;border-radius:50%;background:white;top:3px;left:3px;transition:.2s}.switch.on{background:var(--blue)}.switch.on:after{left:22px}
+.texture-preview{height:150px;border:1px dashed #354251;border-radius:12px;display:grid;place-items:center;color:var(--muted);overflow:hidden;background:#121821}
+.texture-preview img{width:100%;height:100%;object-fit:contain}
+.status{margin-top:10px;padding:10px;border-radius:9px;background:#111924;border:1px solid #26313d;font-size:12px;color:#c5ced9;line-height:1.45}
+.choice{height:55px;border:1px solid #27313d;background:var(--panel2);border-radius:10px;margin-bottom:9px;display:flex;align-items:center;gap:10px;padding:0 13px}.choice.active{border-color:#448ff6}.radio{width:19px;height:19px;border:2px solid #8996a6;border-radius:50%}.choice.active .radio{border-color:#61a6ff;box-shadow:inset 0 0 0 5px #1f70d9}
+.toast{position:fixed;left:50%;bottom:78px;transform:translate(-50%,15px);opacity:0;background:#202a35;border:1px solid #384657;border-radius:10px;padding:10px 13px;z-index:99;transition:.22s;pointer-events:none;font-size:12px}.toast.show{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none!important}
+@media (orientation:landscape) and (min-width:700px){
+  .props{max-height:180px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo">⬡</div><div><b>3D Viewer & Editor</b><span>GLB • FBX • PNG</span></div></div>
+    <div><button class="iconbtn" id="homeImport">＋</button><button class="iconbtn" id="topMenu">⋮</button></div>
+  </header>
+
+  <main class="content">
+    <section class="screen home active" id="homeScreen">
+      <div class="titleline"><h2>Recent Files</h2><span style="color:#61a6ff;font-size:12px">Local</span></div>
+      <div class="file-card"><div class="thumb">🪑</div><div><b>Model.glb</b><small>Import GLB dari perangkat</small></div><div>⋮</div></div>
+      <div class="file-card"><div class="thumb">🚙</div><div><b>Model.fbx</b><small>Import FBX dari perangkat</small></div><div>⋮</div></div>
+      <div class="file-card"><div class="thumb">🖼️</div><div><b>Texture.png</b><small>Pasang PNG ke material model</small></div><div>⋮</div></div>
+      <div class="titleline" style="margin-top:20px"><h2>Quick Actions</h2></div>
+      <div class="quick">
+        <button class="qbtn" data-go="importScreen"><i>📁</i>Import</button>
+        <button class="qbtn" id="newScene"><i>⬡</i>New Scene</button>
+        <button class="qbtn" data-go="materialScreen"><i>🖼️</i>Texture</button>
+        <button class="qbtn" data-go="exportScreen"><i>⇧</i>Export</button>
+      </div>
+    </section>
+
+    <section class="screen" id="editorScreen">
+      <div class="editor">
+        <aside class="toolrail">
+          <button class="tool active"><b>➤</b>Select</button>
+          <button class="tool"><b>✣</b>Move</button>
+          <button class="tool"><b>⟳</b>Rotate</button>
+          <button class="tool"><b>⌗</b>Scale</button>
+          <button class="tool" id="frameModel"><b>⌖</b>Frame</button>
+        </aside>
+
+        <div class="viewport">
+          <canvas id="threeCanvas"></canvas>
+          <div class="overleft"><span class="pill" id="fileLabel">No model loaded</span></div>
+          <div class="overright"><span class="pill" id="meshLabel">0 Mesh</span></div>
+          <div class="viewtools">
+            <button id="wireBtn"><strong>▧</strong>Wire</button>
+            <button id="gridBtn" class="on"><strong>#</strong>Grid</button>
+            <button id="lightBtn" class="on"><strong>☀</strong>Light</button>
+            <button id="safeBtn"><strong>◑</strong>Visible</button>
+          </div>
+          <div style="position:absolute;left:8%;bottom:60px;z-index:4;display:flex;gap:8px;align-items:center">
+            <select id="animSelect" class="field" style="min-width:170px;height:36px">
+              <option value="">No Animation</option>
+            </select>
+          </div>
+          <div class="timeline"><button class="iconbtn" id="playBtn">▶</button><span id="frameText">1</span><input type="range" min="0" max="100" value="0" id="animRange"><span id="durationText">0s</span></div>
+        </div>
+
+        <section class="props">
+          <h3>Transform</h3>
+          <div class="grid4">
+            <div class="lab">Position</div><input class="field" id="px" value="0"><input class="field" id="py" value="0"><input class="field" id="pz" value="0">
+            <div class="lab">Rotation</div><input class="field" id="rx" value="0"><input class="field" id="ry" value="0"><input class="field" id="rz" value="0">
+            <div class="lab">Scale</div><input class="field" id="sx" value="1"><input class="field" id="sy" value="1"><input class="field" id="sz" value="1">
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="screen form" id="importScreen">
+      <div class="head"><button class="back" data-go="homeScreen">←</button><h2>Import Model</h2></div>
+      <div class="cards3">
+        <div class="fcard"><strong>⬡</strong><b>GLB</b><small>.glb</small></div>
+        <div class="fcard"><strong style="color:#5fd3d4">F</strong><b>FBX</b><small>.fbx</small></div>
+        <div class="fcard"><strong>🖼️</strong><b>PNG</b><small>texture</small></div>
+      </div>
+      <input id="modelInput" type="file" accept=".glb,.fbx,.png,image/png" class="hidden">
+      <label class="outline" for="modelInput" id="chooseModel" style="display:flex;align-items:center;justify-content:center">Choose GLB / FBX / PNG</label>
+      <div class="status" id="importStatus">Belum ada model dipilih.</div>
+      <div class="section">
+        <h3>Import Options</h3>
+        <div class="row"><span>Center + Feet to Grid</span><div class="switch on" id="centerToggle"></div></div>
+        <div class="row"><span>Auto Fit Camera</span><div class="switch on" id="fitToggle"></div></div>
+      </div>
+      <button class="primary" id="importModelBtn">Import Model</button>
+    </section>
+
+    <section class="screen form" id="materialScreen">
+      <div class="head"><button class="back" data-go="editorScreen">←</button><h2>Material & Texture</h2></div>
+      <div class="texture-preview" id="texturePreview">PNG texture preview</div>
+      <input id="textureInput" type="file" accept=".png,image/png" class="hidden">
+      <label class="outline" for="textureInput" id="chooseTexture" style="display:flex;align-items:center;justify-content:center">Choose PNG Texture</label>
+
+      <div class="section">
+        <h3>Target</h3>
+        <div class="row"><span>Apply to</span>
+          <select class="field" id="targetMesh"><option value="all">All Meshes</option></select>
+        </div>
+        <div class="row"><span>Texture Channel</span>
+          <select class="field" id="channel">
+            <option value="map">Base Color</option>
+            <option value="normalMap">Normal Map</option>
+            <option value="roughnessMap">Roughness Map</option>
+            <option value="metalnessMap">Metallic Map</option>
+            <option value="emissiveMap">Emissive Map</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>UV Mapping</h3>
+        <div class="row"><span>Use existing UV</span><div class="switch on" id="existingUVToggle"></div></div>
+        <button class="outline" id="autoUVBtn">Auto UV (Box Projection)</button>
+        <div class="status">
+          Jika GLB/FBX sudah punya UV, PNG langsung mengikuti UV tersebut. Jika belum, tekan <b>Auto UV</b> lalu <b>Apply Texture</b>.
+        </div>
+      </div>
+      <button class="primary" id="applyTextureBtn">Apply Texture</button>
+    </section>
+
+    <section class="screen form" id="exportScreen">
+      <div class="head"><button class="back" data-go="editorScreen">←</button><h2>Export</h2></div>
+      <div class="choice active" data-format="glb"><div class="radio"></div><b>GLB</b><span style="margin-left:auto;color:var(--muted);font-size:12px">Model + UV + Texture</span></div>
+      <div class="choice" data-format="png"><div class="radio"></div><b>PNG Snapshot</b><span style="margin-left:auto;color:var(--muted);font-size:12px">Viewport image</span></div>
+      <div class="section">
+        <h3>GLB Options</h3>
+        <div class="row"><span>Embed Textures</span><div class="switch on"></div></div>
+        <div class="row"><span>Binary GLB</span><div class="switch on"></div></div>
+        <div class="row"><span>Include Animations</span><div class="switch on" id="animExportToggle"></div></div>
+        <div class="row"><span>Animation Clips</span><div id="animClipCount" style="justify-self:end;color:var(--muted)">0</div></div>
+      </div>
+      <button class="primary" id="exportBtn">Export</button>
+      <div class="status" id="exportStatus">Export GLB akan menyimpan geometry, UV, material, texture, skin/skeleton, dan animation clips.</div>
+    </section>
+  </main>
+
+  <nav class="bottomnav">
+    <button class="nav active" data-go="homeScreen"><b>⌂</b>Home</button>
+    <button class="nav" data-go="editorScreen"><b>⬡</b>Object</button>
+    <button class="nav" data-go="materialScreen"><b>◉</b>Material</button>
+    <button class="nav" id="autoUVNav"><b>⌗</b>Auto UV</button>
+    <button class="nav" data-go="exportScreen"><b>⇧</b>Export</button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  document.addEventListener('DOMContentLoaded', function(){
+    var mi=byId('modelInput');
+    var ms=byId('importStatus');
+    if(mi){
+      mi.addEventListener('change', function(){
+        var f=mi.files && mi.files[0];
+        if(f && ms){ ms.textContent='Dipilih: '+f.name+' • '+(f.size/1024/1024).toFixed(2)+' MB'; }
+      });
+    }
+    var ti=byId('textureInput');
+    if(ti){
+      ti.addEventListener('change', function(){
+        var f=ti.files && ti.files[0];
+        if(!f) return;
+        var preview=byId('texturePreview');
+        if(preview){
+          var reader=new FileReader();
+          reader.onload=function(){
+            preview.innerHTML='';
+            var img=new Image();
+            img.src=reader.result;
+            preview.appendChild(img);
+          };
+          reader.readAsDataURL(f);
+        }
+      });
+    }
+  });
+})();
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+const $ = id => document.getElementById(id);
+const screens = [...document.querySelectorAll('.screen')];
+const toast = $('toast');
+function msg(t){
+  toast.textContent=t; toast.classList.add('show');
+  clearTimeout(msg.t); msg.t=setTimeout(()=>toast.classList.remove('show'),1700);
+}
+function go(id){
+  screens.forEach(s=>s.classList.toggle('active',s.id===id));
+  document.querySelectorAll('.nav[data-go]').forEach(n=>n.classList.toggle('active',n.dataset.go===id));
+  setTimeout(resize,50);
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+document.querySelectorAll('.switch').forEach(s=>s.addEventListener('click',()=>s.classList.toggle('on')));
+document.querySelectorAll('.choice').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.choice').forEach(x=>x.classList.remove('active')); c.classList.add('active');
+}));
+$('homeImport').onclick=()=>go('importScreen');
+$('newScene').onclick=()=>{ clearModel(); go('editorScreen'); msg('Scene baru dibuat'); };
+$('topMenu').onclick=()=>msg('3D Viewer & Editor');
+const canvas = $('threeCanvas');
+const renderer = new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.45;
+renderer.shadowMap.enabled = true;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x20262e);
+const camera = new THREE.PerspectiveCamera(45,1,.01,10000);
+camera.position.set(3,2.4,4.2);
+const controls = new OrbitControls(camera,canvas);
+controls.enableDamping=true;
+controls.dampingFactor=.08;
+const ambient = new THREE.AmbientLight(0xffffff,2.2); scene.add(ambient);
+const hemi = new THREE.HemisphereLight(0xffffff,0x667788,2.4); scene.add(hemi);
+const key = new THREE.DirectionalLight(0xffffff,4.2); key.position.set(4,7,5); key.castShadow=true; scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff,2.0); fill.position.set(-4,3,-2); scene.add(fill);
+const grid = new THREE.GridHelper(20,20,0x4b5968,0x35404d); scene.add(grid);
+let root=null;
+let currentFileName='untitled.glb';
+let selectedTexture=null;
+let mixer=null, clips=[], activeAction=null, activeClipIndex=0, playing=false, clock=new THREE.Clock();
+let meshList=[];
+function resize(){
+  const r=canvas.getBoundingClientRect();
+  if(!r.width||!r.height)return;
+  renderer.setSize(r.width,r.height,false);
+  camera.aspect=r.width/r.height; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas);
+function clearModel(){
+  if(root){
+    scene.remove(root);
+    root.traverse(o=>{
+      if(o.geometry)o.geometry.dispose?.();
+      if(o.material){
+        const mats=Array.isArray(o.material)?o.material:[o.material];
+        mats.forEach(m=>{
+          for(const k in m){ const v=m[k]; if(v && v.isTexture) v.dispose?.(); }
+          m.dispose?.();
+        });
+      }
+    });
+  }
+  root=null; meshList=[]; mixer=null; clips=[]; activeAction=null; activeClipIndex=0; playing=false;
+  $('playBtn').textContent='▶';
+  $('animRange').value=0;
+  $('frameText').textContent='1';
+  $('durationText').textContent='0s';
+  if($('animSelect')) $('animSelect').innerHTML='<option value="">No Animation</option>';
+  if($('animClipCount')) $('animClipCount').textContent='0';
+  $('fileLabel').textContent='No model loaded'; $('meshLabel').textContent='0 Mesh';
+  updateMeshSelect();
+}
+function centerAndFit(obj){
+  obj.updateMatrixWorld(true);
+  let box=new THREE.Box3().setFromObject(obj);
+  let size=box.getSize(new THREE.Vector3());
+  let center=box.getCenter(new THREE.Vector3());
+  if($('centerToggle').classList.contains('on')){
+    obj.position.x -= center.x;
+    obj.position.z -= center.z;
+    obj.position.y -= box.min.y;
+    obj.updateMatrixWorld(true);
+    box=new THREE.Box3().setFromObject(obj);
+    obj.position.y -= box.min.y;
+    obj.updateMatrixWorld(true);
+    box=new THREE.Box3().setFromObject(obj);
+    size=box.getSize(new THREE.Vector3());
+  }
+  grid.position.y=0;
+  const maxDim=Math.max(size.x,size.y,size.z)||1;
+  if($('fitToggle').classList.contains('on')){
+    const dist=maxDim*2.3;
+    camera.position.set(dist*.85, Math.max(size.y*.55,maxDim*.45), dist);
+    controls.target.set(0, Math.max(size.y*.45,0), 0);
+    camera.near=Math.max(.001,maxDim/1000);
+    camera.far=Math.max(1000,maxDim*100);
+    camera.updateProjectionMatrix();
+    controls.update();
+  }
+}
+function normalizeImportedMaterial(mat, mesh){
+  if(!mat) return new THREE.MeshStandardMaterial({color:0xffffff,roughness:.72,metalness:0,side:THREE.DoubleSide});
+  const m=mat.clone ? mat.clone() : mat;
+  if('vertexColors' in m) m.vertexColors=false;
+  if(m.map && m.color) m.color.set(0xffffff);
+  if(!m.map && m.color){ const lum=(m.color.r+m.color.g+m.color.b)/3; if(lum < .015) m.color.set(0xbfc5cc); }
+  if('roughness' in m){ m.roughness=Number.isFinite(m.roughness)?Math.min(1,Math.max(.18,m.roughness)):.72; }
+  if('metalness' in m){ m.metalness=Number.isFinite(m.metalness)?Math.min(.65,Math.max(0,m.metalness)):0; }
+  m.side=THREE.DoubleSide;
+  m.needsUpdate=true;
+  return m;
+}
+function registerModel(obj,name,animations=[]){
+  clearModel();
+  root=obj; currentFileName=name||'model.glb';
+  scene.add(root);
+  root.traverse(o=>{
+    if(o.isMesh){
+      o.castShadow=true;o.receiveShadow=true;
+      meshList.push(o);
+      if(o.geometry && !o.geometry.getAttribute('normal')) o.geometry.computeVertexNormals();
+      if(Array.isArray(o.material)) o.material=o.material.map(m=>normalizeImportedMaterial(m,o));
+      else o.material=normalizeImportedMaterial(o.material,o);
+    }
+  });
+  centerAndFit(root);
+  $('fileLabel').textContent=currentFileName;
+  $('meshLabel').textContent=meshList.length+' Mesh';
+  clips=animations||[];
+  if($('animClipCount')) $('animClipCount').textContent=String(clips.length);
+  const animSelect=$('animSelect');
+  animSelect.innerHTML='';
+  if(clips.length){
+    mixer=new THREE.AnimationMixer(root);
+    clips.forEach((clip,i)=>{
+      const opt=document.createElement('option');
+      opt.value=String(i);
+      opt.textContent=clip.name && clip.name.trim() ? `${i+1}. ${clip.name}` : `Animation ${i+1}`;
+      animSelect.appendChild(opt);
+    });
+    activeClipIndex=0;
+    activeAction=mixer.clipAction(clips[0]);
+    activeAction.reset().play();
+    mixer.timeScale=0;
+    $('durationText').textContent=clips[0].duration.toFixed(2)+'s';
+    $('animRange').value=0;
+    $('frameText').textContent='1';
+  } else {
+    mixer=null; activeAction=null;
+    const opt=document.createElement('option'); opt.value=''; opt.textContent='No Animation'; animSelect.appendChild(opt);
+    $('durationText').textContent='0s';
+  }
+  updateMeshSelect();
+  updateTransformFields();
+}
+function updateMeshSelect(){
+  const s=$('targetMesh');
+  s.innerHTML='<option value="all">All Meshes</option>';
+  meshList.forEach((m,i)=>{ const o=document.createElement('option'); o.value=String(i); o.textContent=m.name||`Mesh ${i+1}`; s.appendChild(o); });
+}
+function getTargets(){
+  const v=$('targetMesh').value;
+  if(v==='all') return meshList;
+  return meshList[Number(v)]?[meshList[Number(v)]]:[];
+}
+function updateTransformFields(){
+  if(!root)return;
+  $('px').value=root.position.x.toFixed(3);$('py').value=root.position.y.toFixed(3);$('pz').value=root.position.z.toFixed(3);
+  $('rx').value=THREE.MathUtils.radToDeg(root.rotation.x).toFixed(1);
+  $('ry').value=THREE.MathUtils.radToDeg(root.rotation.y).toFixed(1);
+  $('rz').value=THREE.MathUtils.radToDeg(root.rotation.z).toFixed(1);
+  $('sx').value=root.scale.x.toFixed(3);$('sy').value=root.scale.y.toFixed(3);$('sz').value=root.scale.z.toFixed(3);
+}
+['px','py','pz','rx','ry','rz','sx','sy','sz'].forEach(id=>{
+  $(id).addEventListener('change',()=>{
+    if(!root)return;
+    root.position.set(parseFloat($('px').value)||0,parseFloat($('py').value)||0,parseFloat($('pz').value)||0);
+    root.rotation.set(THREE.MathUtils.degToRad(parseFloat($('rx').value)||0),THREE.MathUtils.degToRad(parseFloat($('ry').value)||0),THREE.MathUtils.degToRad(parseFloat($('rz').value)||0));
+    root.scale.set(parseFloat($('sx').value)||1,parseFloat($('sy').value)||1,parseFloat($('sz').value)||1);
+  });
+});
+const modelInput=$('modelInput');
+modelInput.onchange=()=>{
+  const f=modelInput.files[0];
+  if(!f){ $('importStatus').textContent='Belum ada file dipilih.'; return; }
+  const ext=f.name.split('.').pop().toLowerCase();
+  $('importStatus').textContent=`Dipilih: ${f.name} • ${(f.size/1024/1024).toFixed(2)} MB`;
+  if(ext==='png'){
+    selectedTexture=f;
+    const u=URL.createObjectURL(f);
+    $('texturePreview').innerHTML='';
+    const img=new Image(); img.onload=()=>URL.revokeObjectURL(u); img.src=u; $('texturePreview').appendChild(img);
+    go('materialScreen');
+    msg(root ? 'PNG siap dipasang ke model' : 'PNG masuk. Import GLB/FBX juga untuk memasangnya.');
+  }
+};
+$('importModelBtn').onclick=async()=>{
+  const f=modelInput.files[0];
+  if(!f){msg('Pilih file GLB, FBX, atau PNG dulu');return}
+  const ext=f.name.split('.').pop().toLowerCase();
+  if(ext==='png'){
+    selectedTexture=f;
+    const u=URL.createObjectURL(f);
+    $('texturePreview').innerHTML='';
+    const img=new Image(); img.onload=()=>URL.revokeObjectURL(u); img.src=u; $('texturePreview').appendChild(img);
+    go('materialScreen'); msg('PNG texture berhasil diimport'); return;
+  }
+  const url=URL.createObjectURL(f);
+  $('importStatus').textContent='Loading model...';
+  try{
+    if(ext==='glb'){
+      const gltf=await new Promise((res,rej)=>new GLTFLoader().load(url,res,undefined,rej));
+      registerModel(gltf.scene,f.name,gltf.animations);
+    }else if(ext==='fbx'){
+      const obj=await new Promise((res,rej)=>new FBXLoader().load(url,res,undefined,rej));
+      registerModel(obj,f.name,obj.animations||[]);
+    }else throw new Error('Format tidak didukung');
+    $('importStatus').textContent=`Berhasil import ${f.name}.`;
+    go('editorScreen'); msg('Model berhasil dimuat');
+  }catch(e){
+    console.error(e); $('importStatus').textContent='Gagal import: '+e.message; msg('Import gagal');
+  }finally{ URL.revokeObjectURL(url); }
+};
+const textureInput=$('textureInput');
+textureInput.onchange=()=>{
+  const f=textureInput.files[0];
+  if(!f)return;
+  selectedTexture=f;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    $('texturePreview').innerHTML='';
+    const img=new Image(); img.src=reader.result; $('texturePreview').appendChild(img);
+  };
+  reader.readAsDataURL(f);
+  msg('Texture dipilih: '+f.name);
+};
+function hasUV(mesh){ return !!mesh.geometry?.getAttribute('uv'); }
+function autoUV(mesh){
+  let g=mesh.geometry;
+  if(!g?.getAttribute('position')) return false;
+  if(g.index) g=g.toNonIndexed();
+  g.computeBoundingBox();
+  const box=g.boundingBox;
+  const size=new THREE.Vector3(); box.getSize(size);
+  size.x ||= 1; size.y ||= 1; size.z ||= 1;
+  const pos=g.getAttribute('position');
+  const uvs=new Float32Array(pos.count*2);
+  const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+  const ab=new THREE.Vector3(),ac=new THREE.Vector3(),n=new THREE.Vector3();
+  const norm=(v,min,span)=>(v-min)/span;
+  for(let i=0;i<pos.count;i+=3){
+    a.fromBufferAttribute(pos,i); b.fromBufferAttribute(pos,i+1); c.fromBufferAttribute(pos,i+2);
+    ab.subVectors(b,a); ac.subVectors(c,a); n.crossVectors(ab,ac).normalize();
+    const ax=Math.abs(n.x), ay=Math.abs(n.y), az=Math.abs(n.z);
+    for(let j=0;j<3;j++){
+      const p=new THREE.Vector3().fromBufferAttribute(pos,i+j);
+      let u,v;
+      if(ax>=ay && ax>=az){ u=norm(p.z,box.min.z,size.z); v=norm(p.y,box.min.y,size.y); }
+      else if(ay>=ax && ay>=az){ u=norm(p.x,box.min.x,size.x); v=norm(p.z,box.min.z,size.z); }
+      else{ u=norm(p.x,box.min.x,size.x); v=norm(p.y,box.min.y,size.y); }
+      uvs[(i+j)*2]=u; uvs[(i+j)*2+1]=v;
+    }
+  }
+  g.setAttribute('uv',new THREE.BufferAttribute(uvs,2));
+  g.computeVertexNormals();
+  mesh.geometry=g;
+  return true;
+}
+$('autoUVBtn').onclick=()=>{
+  if(!root){msg('Import model dulu');return}
+  const targets=getTargets();
+  let n=0; targets.forEach(m=>{if(autoUV(m))n++});
+  msg(`Auto UV selesai pada ${n} mesh`);
+};
+$('autoUVNav').onclick=()=>{
+  if(!root){go('importScreen');msg('Import model dulu');return}
+  go('materialScreen'); setTimeout(()=>$('autoUVBtn').focus(),100);
+};
+function fileToImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('File PNG tidak dapat dibaca'));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>resolve(img);
+      img.onerror=()=>reject(new Error('PNG tidak dapat didecode'));
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function makeTextureFromImage(img, channel){
+  const tex=new THREE.Texture(img);
+  tex.needsUpdate=true;
+  tex.flipY=false;
+  tex.wrapS=THREE.RepeatWrapping;
+  tex.wrapT=THREE.RepeatWrapping;
+  tex.magFilter=THREE.LinearFilter;
+  tex.minFilter=THREE.LinearMipmapLinearFilter;
+  if(channel==='map' || channel==='emissiveMap') tex.colorSpace=THREE.SRGBColorSpace;
+  else tex.colorSpace=THREE.NoColorSpace;
+  return tex;
+}
+function ensureUsableMaterial(oldMat){
+  if(oldMat && (oldMat.isMeshStandardMaterial || oldMat.isMeshPhysicalMaterial || oldMat.isMeshBasicMaterial || oldMat.isMeshPhongMaterial || oldMat.isMeshLambertMaterial)) return oldMat.clone();
+  const m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.75,metalness:0});
+  if(oldMat){
+    if(oldMat.transparent!==undefined) m.transparent=oldMat.transparent;
+    if(oldMat.opacity!==undefined) m.opacity=oldMat.opacity;
+    if(oldMat.side!==undefined) m.side=oldMat.side;
+    if(oldMat.name) m.name=oldMat.name;
+  }
+  return m;
+}
+$('applyTextureBtn').onclick=async()=>{
+  if(!root){msg('Import GLB/FBX dulu');return}
+  if(!selectedTexture){msg('Pilih PNG texture dulu');return}
+  const targets=getTargets();
+  if(!targets.length){msg('Tidak ada mesh target');return}
+  const btn=$('applyTextureBtn');
+  const oldText=btn.textContent;
+  btn.disabled=true;
+  btn.textContent='Applying Texture...';
+  const channel=$('channel').value;
+  try{
+    const img=await fileToImage(selectedTexture);
+    let applied=0, uvGenerated=0, failedUV=0;
+    for(const mesh of targets){
+      if(!mesh.geometry?.getAttribute('position')) continue;
+      if(!hasUV(mesh)){
+        if(autoUV(mesh)) uvGenerated++;
+        else { failedUV++; continue; }
+      }
+      const original=Array.isArray(mesh.material)?mesh.material:[mesh.material || new THREE.MeshStandardMaterial({color:0xffffff})];
+      const replacements=original.map(oldMat=>{
+        const nm=ensureUsableMaterial(oldMat);
+        const tex=makeTextureFromImage(img,channel);
+        if('vertexColors' in nm) nm.vertexColors=false;
+        nm.side=THREE.DoubleSide;
+        if(channel==='map'){
+          if(nm.color) nm.color.set(0xffffff);
+          nm.map=tex;
+          if('emissive' in nm){ nm.emissive.set(0xffffff); nm.emissiveMap=tex; nm.emissiveIntensity=.32; }
+        }else if(channel==='normalMap'){
+          nm.normalMap=tex; if(nm.normalScale) nm.normalScale.set(1,1);
+        }else if(channel==='roughnessMap'){
+          nm.roughnessMap=tex; if('roughness' in nm) nm.roughness=1;
+        }else if(channel==='metalnessMap'){
+          nm.metalnessMap=tex; if('metalness' in nm) nm.metalness=1;
+        }else if(channel==='emissiveMap'){
+          nm.emissiveMap=tex; if(nm.emissive) nm.emissive.set(0xffffff); if('emissiveIntensity' in nm) nm.emissiveIntensity=1;
+        }
+        nm.needsUpdate=true;
+        return nm;
+      });
+      mesh.material=Array.isArray(mesh.material)?replacements:replacements[0];
+      applied++;
+    }
+    if(!applied) throw new Error('Tidak ada mesh yang bisa diberi texture');
+    let info=`Texture berhasil diterapkan ke ${applied} mesh`;
+    if(uvGenerated) info+=` • Auto UV: ${uvGenerated}`;
+    if(failedUV) info+=` • UV gagal: ${failedUV}`;
+    msg(info);
+    $('exportStatus').textContent='Texture sudah diterapkan. Export GLB akan menyimpan geometry, UV, material, dan texture.';
+    go('editorScreen');
+  }catch(e){
+    console.error(e); msg('Apply gagal: '+e.message);
+  }finally{
+    btn.disabled=false; btn.textContent=oldText;
+  }
+};
+$('wireBtn').onclick=()=>{
+  const on=$('wireBtn').classList.toggle('on');
+  meshList.forEach(mesh=>{
+    const mats=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+    mats.forEach(m=>{if(m){m.wireframe=on;m.needsUpdate=true}});
+  });
+};
+$('gridBtn').onclick=()=>{grid.visible=$('gridBtn').classList.toggle('on')};
+$('lightBtn').onclick=()=>{
+  const on=$('lightBtn').classList.toggle('on');
+  ambient.visible=hemi.visible=key.visible=fill.visible=on;
+};
+$('safeBtn').onclick=()=>{
+  const on=$('safeBtn').classList.toggle('on');
+  meshList.forEach(mesh=>{
+    if(on){
+      if(!mesh.userData.__editorOriginalMaterial) mesh.userData.__editorOriginalMaterial=mesh.material;
+      const mats=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+      const safe=mats.map(m=>new THREE.MeshBasicMaterial({color:0xffffff,map:m?.map||null,transparent:m?.transparent||false,opacity:m?.opacity??1,alphaTest:m?.alphaTest||0,side:THREE.DoubleSide,vertexColors:false}));
+      mesh.material=Array.isArray(mesh.material)?safe:safe[0];
+    }else if(mesh.userData.__editorOriginalMaterial){
+      mesh.material=mesh.userData.__editorOriginalMaterial;
+      delete mesh.userData.__editorOriginalMaterial;
+    }
+  });
+  msg(on?'Visible Preview ON — lighting diabaikan':'Visible Preview OFF');
+};
+$('frameModel').onclick=()=>{if(root){centerAndFit(root);msg('Camera framed')}};
+function selectAnimation(index){
+  if(!mixer || !clips.length) return;
+  index=Math.max(0,Math.min(clips.length-1,Number(index)||0));
+  const wasPlaying=playing;
+  mixer.stopAllAction();
+  mixer.setTime(0);
+  activeClipIndex=index;
+  activeAction=mixer.clipAction(clips[index]);
+  activeAction.reset();
+  activeAction.enabled=true;
+  activeAction.setEffectiveWeight(1);
+  activeAction.setEffectiveTimeScale(1);
+  activeAction.play();
+  mixer.timeScale=wasPlaying?1:0;
+  $('animRange').value=0;
+  $('frameText').textContent='1';
+  $('durationText').textContent=clips[index].duration.toFixed(2)+'s';
+}
+$('animSelect').onchange=e=>{
+  selectAnimation(e.target.value);
+  msg('Animation: '+(clips[activeClipIndex]?.name || `Animation ${activeClipIndex+1}`));
+};
+$('playBtn').onclick=()=>{
+  if(!mixer||!clips.length||!activeAction){msg('Model tidak punya animasi');return}
+  playing=!playing;
+  mixer.timeScale=playing?1:0;
+  $('playBtn').textContent=playing?'❚❚':'▶';
+};
+$('animRange').oninput=()=>{
+  if(!mixer||!clips.length||!activeAction)return;
+  const d=clips[activeClipIndex].duration;
+  mixer.setTime((+$('animRange').value/100)*d);
+  $('frameText').textContent=Math.max(1,Math.round(+$('animRange').value));
+};
+function downloadBlob(blob,name){
+  if(window.Android && Android.saveBase64File){
+    const reader=new FileReader();
+    reader.onloadend=()=>{
+      const result=String(reader.result||'');
+      const base64=result.includes(',')?result.split(',')[1]:result;
+      Android.saveBase64File(base64,name,blob.type||'application/octet-stream');
+    };
+    reader.readAsDataURL(blob);
+    return;
+  }
+  const a=document.createElement('a');
+  const u=URL.createObjectURL(blob);
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),1500);
+}
+$('exportBtn').onclick=async()=>{
+  if(!root){msg('Belum ada model untuk diexport');return}
+  const format=document.querySelector('.choice.active').dataset.format;
+  if(format==='png'){
+    renderer.render(scene,camera);
+    canvas.toBlob(b=>downloadBlob(b,(currentFileName.replace(/\.[^.]+$/,'')||'snapshot')+'.png'),'image/png');
+    msg('PNG snapshot dibuat');return;
+  }
+  $('exportStatus').textContent='Membuat GLB...';
+  try{
+    const exporter=new GLTFExporter();
+    const includeAnimations = $('animExportToggle') ? $('animExportToggle').classList.contains('on') : true;
+    if(mixer){
+      const wasPlaying = playing;
+      mixer.timeScale = 0;
+      mixer.setTime(0);
+      root.updateMatrixWorld(true);
+      if(wasPlaying) mixer.timeScale = 1;
+    }
+    const out=await exporter.parseAsync(root,{binary:true,trs:false,onlyVisible:false,maxTextureSize:4096,animations: includeAnimations ? clips : []});
+    downloadBlob(new Blob([out],{type:'model/gltf-binary'}),(currentFileName.replace(/\.[^.]+$/,'')||'model')+'_textured.glb');
+    $('exportStatus').textContent=`Selesai. GLB berisi model, UV, material, texture, dan ${clips.length} animation clip.`;
+    msg('GLB berhasil diexport');
+  }catch(e){
+    console.error(e);
+    $('exportStatus').textContent='Export gagal: '+e.message;
+    msg('Export gagal');
+  }
+};
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=clock.getDelta();
+  if(mixer && playing && activeAction && clips[activeClipIndex]){
+    mixer.update(dt);
+    const d=clips[activeClipIndex].duration||1;
+    const t=activeAction.time % d;
+    const pct=(t/d)*100;
+    $('animRange').value=pct;
+    $('frameText').textContent=Math.max(1,Math.round(pct));
+  }
+  controls.update();
+  renderer.render(scene,camera);
+}
+resize();animate();
+</script>
+</body>
+</html>

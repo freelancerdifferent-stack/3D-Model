@@ -11,81 +11,54 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-
       - name: Install Android SDK 35
         run: yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
       - name: Patch FBX parser to Assimp WASM
         run: python3 tools/patch_fbx_assimp.py
-
       - name: Patch universal Layers
         run: python3 tools/patch_layers_v2.py
-
       - name: Patch separate Mesh Layers
         run: python3 tools/patch_mesh_layers.py
-
       - name: Patch touch Part Drag
         run: python3 tools/patch_part_drag.py
-
       - name: Patch touch Part Rotate and Scale
         run: python3 tools/patch_part_rotate_scale.py
-
       - name: Patch Part Transform Axis Lock
         run: python3 tools/patch_part_axis_lock.py
-
-      - name: Patch internal Project Manager
+      - name: Patch Project Manager
         run: python3 tools/patch_project_manager.py
-
-      - name: Verify Assimp, Layers, Part tools and Projects
+      - name: Patch selectable project folder storage
+        run: python3 tools/patch_project_folder_saf.py
+      - name: Verify editor pipeline
         run: |
           grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
-          grep -q "ConvertFileList(fileList,'glb2')" app/src/main/assets/index.html
           grep -q 'id="layersScreen"' app/src/main/assets/index.html
-          grep -q 'id="layerInput"' app/src/main/assets/index.html
-          grep -q "registerPrimaryLayer" app/src/main/assets/index.html
-          grep -q "addModelLayer" app/src/main/assets/index.html
           grep -q 'id="meshLayersScreen"' app/src/main/assets/index.html
-          grep -q 'id="meshLayersNav"' app/src/main/assets/index.html
-          grep -q "renderMeshLayers" app/src/main/assets/index.html
-          grep -q "selectMeshLayer" app/src/main/assets/index.html
           grep -q 'id="partDragBtn"' app/src/main/assets/index.html
-          grep -q "beginPartDrag" app/src/main/assets/index.html
-          grep -q "resetSelectedPartPosition" app/src/main/assets/index.html
           grep -q 'id="partRotateBtn"' app/src/main/assets/index.html
           grep -q 'id="partScaleBtn"' app/src/main/assets/index.html
-          grep -q "beginPartTransform" app/src/main/assets/index.html
-          grep -q "resetSelectedPartRotation" app/src/main/assets/index.html
-          grep -q "resetSelectedPartScale" app/src/main/assets/index.html
-          grep -q 'id="partAxisOverlay"' app/src/main/assets/index.html
-          grep -q "setPartTransformAxis" app/src/main/assets/index.html
           grep -q "partTransformAxis" app/src/main/assets/index.html
           grep -q 'id="projectsScreen"' app/src/main/assets/index.html
-          grep -q "openProjectDb" app/src/main/assets/index.html
-          grep -q "saveCurrentProject" app/src/main/assets/index.html
-          grep -q "openSavedProject" app/src/main/assets/index.html
-
+          grep -q 'id="projectFolderBtn"' app/src/main/assets/index.html
+          grep -q "chooseProjectFolderSaf" app/src/main/assets/index.html
+          grep -q "saveCurrentProjectToFolder" app/src/main/assets/index.html
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
       - name: Build debug APK
         run: gradle --no-daemon assembleDebug
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:

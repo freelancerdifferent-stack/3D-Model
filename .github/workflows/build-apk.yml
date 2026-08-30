@@ -46,7 +46,10 @@ jobs:
       - name: Patch Part Transform Axis Lock
         run: python3 tools/patch_part_axis_lock.py
 
-      - name: Verify Assimp and Layers pipeline
+      - name: Patch internal Project Manager
+        run: python3 tools/patch_project_manager.py
+
+      - name: Verify Assimp, Layers, Part tools and Projects
         run: |
           grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
@@ -70,6 +73,10 @@ jobs:
           grep -q 'id="partAxisOverlay"' app/src/main/assets/index.html
           grep -q "setPartTransformAxis" app/src/main/assets/index.html
           grep -q "partTransformAxis" app/src/main/assets/index.html
+          grep -q 'id="projectsScreen"' app/src/main/assets/index.html
+          grep -q "openProjectDb" app/src/main/assets/index.html
+          grep -q "saveCurrentProject" app/src/main/assets/index.html
+          grep -q "openSavedProject" app/src/main/assets/index.html
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

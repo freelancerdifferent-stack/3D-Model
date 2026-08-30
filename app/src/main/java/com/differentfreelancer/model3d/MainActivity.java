@@ -11,8 +11,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -35,9 +33,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Use the broadly compatible immersive-sticky API. This avoids startup
+        // problems seen on some Android/WebView combinations with WindowInsets.
         enableImmersiveFullscreen();
 
         webView = new WebView(this);
+        webView.setSystemUiVisibility(fullscreenFlags());
         setContentView(webView);
 
         WebSettings settings = webView.getSettings();
@@ -73,8 +74,12 @@ public class MainActivity extends Activity {
                             "image/png"
                     });
                     intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                    startActivityForResult(Intent.createChooser(intent, "Pilih GLB / FBX / PNG"), FILE_CHOOSER_REQUEST);
+                    startActivityForResult(
+                            Intent.createChooser(intent, "Pilih GLB / FBX / PNG"),
+                            FILE_CHOOSER_REQUEST
+                    );
                     return true;
                 } catch (Exception e) {
                     fileCallback = null;
@@ -87,26 +92,17 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
+    private int fullscreenFlags() {
+        return View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+    }
+
     private void enableImmersiveFullscreen() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            getWindow().setDecorFitsSystemWindows(false);
-            WindowInsetsController controller = getWindow().getInsetsController();
-            if (controller != null) {
-                controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-                controller.setSystemBarsBehavior(
-                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                );
-            }
-        } else {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            );
-        }
+        getWindow().getDecorView().setSystemUiVisibility(fullscreenFlags());
     }
 
     @Override
@@ -136,8 +132,14 @@ public class MainActivity extends Activity {
                 try {
                     final int takeFlags = data.getFlags() &
                             (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                    getContentResolver().takePersistableUriPermission(uri, takeFlags & Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if ((takeFlags & Intent.FLAG_GRANT_READ_URI_PERMISSION) != 0) {
+                        getContentResolver().takePersistableUriPermission(
+                                uri,
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        );
+                    }
                 } catch (Exception ignored) {
+                    // Not every document provider offers persistable permissions.
                 }
             }
 
@@ -149,8 +151,11 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     private class AndroidBridge {
@@ -165,23 +170,40 @@ public class MainActivity extends Activity {
                         ContentValues values = new ContentValues();
                         values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
                         values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
-                        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/3D-Model");
-                        Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                        if (uri == null) throw new IllegalStateException("Gagal membuat file output");
+                        values.put(MediaStore.Downloads.RELATIVE_PATH,
+                                Environment.DIRECTORY_DOWNLOADS + "/3D-Model");
+                        Uri uri = getContentResolver().insert(
+                                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                                values
+                        );
+                        if (uri == null) {
+                            throw new IllegalStateException("Gagal membuat file output");
+                        }
                         outputStream = getContentResolver().openOutputStream(uri);
                     } else {
-                        File dir = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "3D-Model");
-                        if (!dir.exists() && !dir.mkdirs()) throw new IllegalStateException("Gagal membuat folder output");
+                        File dir = new File(
+                                getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                                "3D-Model"
+                        );
+                        if (!dir.exists() && !dir.mkdirs()) {
+                            throw new IllegalStateException("Gagal membuat folder output");
+                        }
                         outputStream = new FileOutputStream(new File(dir, fileName));
                     }
 
-                    if (outputStream == null) throw new IllegalStateException("Output stream tidak tersedia");
+                    if (outputStream == null) {
+                        throw new IllegalStateException("Output stream tidak tersedia");
+                    }
                     outputStream.write(bytes);
                     outputStream.flush();
                     outputStream.close();
-                    Toast.makeText(MainActivity.this, "Tersimpan: " + fileName, Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this,
+                            "Tersimpan: " + fileName,
+                            Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Export gagal: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this,
+                            "Export gagal: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
                 }
             });
         }

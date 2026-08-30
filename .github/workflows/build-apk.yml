@@ -32,7 +32,7 @@ jobs:
         run: python3 tools/patch_fbx_assimp.py
 
       - name: Patch universal Layers
-        run: python3 tools/patch_layers.py
+        run: python3 tools/patch_layers_v2.py
 
       - name: Verify Assimp and Layers pipeline
         run: |
@@ -40,9 +40,9 @@ jobs:
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
           grep -q "ConvertFileList(fileList,'glb2')" app/src/main/assets/index.html
           grep -q 'id="layersScreen"' app/src/main/assets/index.html
-          grep -q "Add Layer (FBX / GLB / PNG)" app/src/main/assets/index.html
-          grep -q "let sceneLayers=\[\]" app/src/main/assets/index.html
-          grep -q "layerOpacity" app/src/main/assets/index.html
+          grep -q 'id="layerInput"' app/src/main/assets/index.html
+          grep -q "registerPrimaryLayer" app/src/main/assets/index.html
+          grep -q "addModelLayer" app/src/main/assets/index.html
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

@@ -23,6 +23,27 @@ jobs:
         uses: android-actions/setup-android@v3
       - name: Install Android SDK 35
         run: yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Node for offline runtime assets
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bundle Three.js and AssimpJS into APK assets
+        run: |
+          rm -rf /tmp/df3d-runtime app/src/main/assets/vendor
+          mkdir -p /tmp/df3d-runtime app/src/main/assets/vendor/three app/src/main/assets/vendor/assimpjs
+          cd /tmp/df3d-runtime
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund three@0.180.0 assimpjs@0.0.10
+          cp -R node_modules/three/build "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/build"
+          cp -R node_modules/three/examples "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples"
+          cp -R node_modules/assimpjs/dist "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist"
+          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/build/three.module.js"
+          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/controls/OrbitControls.js"
+          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/loaders/GLTFLoader.js"
+          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/loaders/FBXLoader.js"
+          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/exporters/GLTFExporter.js"
+          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist/assimpjs.js"
+          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm"
       - name: Patch FBX parser to Assimp WASM
         run: python3 tools/patch_fbx_assimp.py
       - name: Patch universal Layers
@@ -71,10 +92,18 @@ jobs:
         run: python3 tools/patch_skinned_mesh_direct_v6.py
       - name: Fix live SkinnedMesh visual preview while dragging
         run: python3 tools/patch_live_edit_visual_preview_v7.py
-      - name: Verify editor pipeline
+      - name: Make runtime fully offline
+        run: python3 tools/patch_offline_runtime.py
+      - name: Verify editor pipeline and offline runtime
         run: |
-          grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
+          grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/index.html
+          grep -q "./vendor/three/build/three.module.js" app/src/main/assets/index.html
+          grep -q "./vendor/three/examples/jsm/" app/src/main/assets/index.html
+          grep -q "./vendor/assimpjs/dist/assimpjs.js" app/src/main/assets/index.html
+          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/index.html
+          ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/index.html
+          test -f app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm
           grep -q 'id="layersScreen"' app/src/main/assets/index.html
           grep -q 'id="meshLayersScreen"' app/src/main/assets/index.html
           grep -q 'id="partDragBtn"' app/src/main/assets/index.html

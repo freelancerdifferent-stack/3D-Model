@@ -89,6 +89,8 @@ jobs:
         run: python3 tools/patch_live_edit_visual_preview_v7.py
       - name: Redesign Object editor UI
         run: python3 tools/patch_object_ui_v9.py
+      - name: Add real Object undo redo history
+        run: python3 tools/patch_object_undo_redo_v10.py
       - name: Make runtime fully offline
         run: python3 tools/patch_offline_runtime.py
       - name: Verify editor pipeline and offline runtime
@@ -96,6 +98,7 @@ jobs:
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
           grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/index.html
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
+          grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
           grep -q "objectTrackpadDrawer" app/src/main/assets/index.html
           grep -q "objectCameraPad" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SELECT_V1" app/src/main/assets/index.html

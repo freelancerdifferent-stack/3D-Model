@@ -83,6 +83,8 @@ jobs:
         run: python3 tools/patch_project_manager.py
       - name: Patch selectable project folder storage
         run: python3 tools/patch_project_folder_saf.py
+      - name: Fix Android project SAF document URI handling
+        run: python3 tools/patch_project_saf_uri_v17.py
       - name: Fix SkinnedMesh direct transform and saved project recovery
         run: python3 tools/patch_skinned_mesh_direct_v6.py
       - name: Fix live SkinnedMesh visual preview while dragging
@@ -117,6 +119,8 @@ jobs:
           grep -q "MESH_TRANSFORM_PANEL_V14" app/src/main/assets/index.html
           grep -q "MESH_LAYER_MANAGE_V16" app/src/main/assets/index.html
           grep -q "ADAPTIVE_FLOOR_GRID_V17" app/src/main/assets/index.html
+          grep -q "PROJECT_SAF_URI_V17" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
+          grep -q "treeRootDocument" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "meshAddInput" app/src/main/assets/index.html
           grep -q "renameMeshLayer" app/src/main/assets/index.html
           grep -q "deleteMeshLayer" app/src/main/assets/index.html

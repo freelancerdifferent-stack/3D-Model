@@ -43,6 +43,8 @@ jobs:
         run: python3 tools/patch_part_longpress_menu.py
       - name: Patch Mesh Layer part locks
         run: python3 tools/patch_mesh_part_lock.py
+      - name: Harden Mesh Layer part locks
+        run: python3 tools/patch_mesh_part_lock_v2.py
       - name: Patch Project Manager
         run: python3 tools/patch_project_manager.py
       - name: Patch selectable project folder storage
@@ -63,8 +65,8 @@ jobs:
           grep -q 'id="partContextMenu"' app/src/main/assets/index.html
           grep -q "PART_LONGPRESS_MS=3000" app/src/main/assets/index.html
           grep -q "MESH_PART_LOCK_V1" app/src/main/assets/index.html
-          grep -q "toggleMeshPartLock" app/src/main/assets/index.html
-          grep -q "isMeshPartLocked" app/src/main/assets/index.html
+          grep -q "MESH_PART_LOCK_V2" app/src/main/assets/index.html
+          grep -q "lockedPartGuard" app/src/main/assets/index.html
           grep -q 'id="projectsScreen"' app/src/main/assets/index.html
           grep -q 'id="projectFolderBtn"' app/src/main/assets/index.html
           grep -q "chooseProjectFolderSaf" app/src/main/assets/index.html

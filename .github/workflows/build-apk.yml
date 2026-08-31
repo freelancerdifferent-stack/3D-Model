@@ -55,6 +55,8 @@ jobs:
         run: python3 tools/patch_live_edit_transform_v2.py
       - name: Fix Live Edit selected part state
         run: python3 tools/patch_live_edit_selection_state_v2.py
+      - name: Fix Live Edit exit and OrbitControls restore
+        run: python3 tools/patch_live_edit_state_v3.py
       - name: Patch Project Manager
         run: python3 tools/patch_project_manager.py
       - name: Patch selectable project folder storage
@@ -80,6 +82,7 @@ jobs:
           grep -q "LIVE_EDIT_TRANSFORM_V1" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_TRANSFORM_V2" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SELECTION_STATE_V2" app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_STATE_V3" app/src/main/assets/index.html
           grep -q 'id="liveEditSelectBtn"' app/src/main/assets/index.html
           grep -q 'id="liveMoveBtn"' app/src/main/assets/index.html
           grep -q 'id="liveRotateBtn"' app/src/main/assets/index.html

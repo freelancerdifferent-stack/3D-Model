@@ -17,10 +17,14 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import androidx.webkit.WebViewAssetLoader;
+import androidx.webkit.WebViewClientCompat;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,20 +39,36 @@ public class MainActivity extends Activity {
     private static final int PROJECT_FOLDER_REQUEST = 1002;
     private static final String PREFS = "model3d_project_storage";
     private static final String PREF_PROJECT_TREE = "project_tree_uri";
+    private static final String ASSET_BASE = "https://appassets.androidplatform.net/assets/";
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
+    private WebViewAssetLoader assetLoader;
 
     @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState); enableImmersiveFullscreen();
         webView=new WebView(this); webView.setSystemUiVisibility(fullscreenFlags()); setContentView(webView);
         WebSettings settings=webView.getSettings(); settings.setJavaScriptEnabled(true); settings.setDomStorageEnabled(true); settings.setAllowFileAccess(true); settings.setAllowContentAccess(true); settings.setMediaPlaybackRequiresUserGesture(false); settings.setBuiltInZoomControls(false); settings.setDisplayZoomControls(false); settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        webView.setWebViewClient(new WebViewClient()); webView.addJavascriptInterface(new AndroidBridge(),"Android");
+
+        assetLoader = new WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
+        webView.setWebViewClient(new WebViewClientCompat(){
+            @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request){
+                WebResourceResponse r=assetLoader.shouldInterceptRequest(request.getUrl());
+                return r!=null?r:super.shouldInterceptRequest(view,request);
+            }
+            @Override public WebResourceResponse shouldInterceptRequest(WebView view,String url){
+                WebResourceResponse r=assetLoader.shouldInterceptRequest(Uri.parse(url));
+                return r!=null?r:super.shouldInterceptRequest(view,url);
+            }
+        });
+        webView.addJavascriptInterface(new AndroidBridge(),"Android");
         webView.setWebChromeClient(new WebChromeClient(){@Override public boolean onShowFileChooser(WebView w,ValueCallback<Uri[]> callback,FileChooserParams params){if(fileCallback!=null)fileCallback.onReceiveValue(null);fileCallback=callback;try{Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"model/gltf-binary","model/gltf+json","application/octet-stream","application/x-fbx","application/vnd.autodesk.fbx","image/png"});i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false);i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivityForResult(Intent.createChooser(i,"Pilih GLB / FBX / PNG"),FILE_CHOOSER_REQUEST);return true;}catch(Exception e){fileCallback=null;Toast.makeText(MainActivity.this,"Tidak dapat membuka file picker",Toast.LENGTH_SHORT).show();return false;}}});
         loadEditorHtml();
     }
 
-    private void loadEditorHtml(){try{String html=readAssetText("index.html");String marker="function registerModel(obj,name,animations=[]){";String helper="function prepareFBXForViewer(obj){\n  obj.updateMatrixWorld(true);\n  obj.traverse(o=>{\n    if(o.isSkinnedMesh){\n      o.frustumCulled=false;\n      try{o.normalizeSkinWeights?.();}catch(e){}\n      if(o.skeleton){try{o.skeleton.pose();o.skeleton.update();o.bindMode='attached';if(o.bindMatrix)o.bind(o.skeleton,o.bindMatrix);}catch(e){console.warn('FBX skeleton repair',e);}}\n      o.updateMatrixWorld(true);\n    }\n  });\n  obj.updateMatrixWorld(true);\n  return obj;\n}\n\n";if(html.contains(marker)&&!html.contains("function prepareFBXForViewer"))html=html.replace(marker,helper+marker);String oldFbx="const obj=await new Promise((res,rej)=>new FBXLoader().load(url,res,undefined,rej));\n      registerModel(obj,f.name,obj.animations||[]);";String newFbx="const obj=await new Promise((res,rej)=>new FBXLoader().load(url,res,undefined,rej));\n      prepareFBXForViewer(obj);\n      registerModel(obj,f.name,obj.animations||[]);\n      requestAnimationFrame(()=>requestAnimationFrame(()=>{\n        if(root===obj){prepareFBXForViewer(obj);centerAndFit(obj);updateTransformFields();}\n      }));";if(html.contains(oldFbx))html=html.replace(oldFbx,newFbx);webView.loadDataWithBaseURL("file:///android_asset/",html,"text/html","UTF-8",null);}catch(Exception e){webView.loadUrl("file:///android_asset/index.html");}}
+    private void loadEditorHtml(){try{String html=readAssetText("index.html");String marker="function registerModel(obj,name,animations=[]){";String helper="function prepareFBXForViewer(obj){\n  obj.updateMatrixWorld(true);\n  obj.traverse(o=>{\n    if(o.isSkinnedMesh){\n      o.frustumCulled=false;\n      try{o.normalizeSkinWeights?.();}catch(e){}\n      if(o.skeleton){try{o.skeleton.pose();o.skeleton.update();o.bindMode='attached';if(o.bindMatrix)o.bind(o.skeleton,o.bindMatrix);}catch(e){console.warn('FBX skeleton repair',e);}}\n      o.updateMatrixWorld(true);\n    }\n  });\n  obj.updateMatrixWorld(true);\n  return obj;\n}\n\n";if(html.contains(marker)&&!html.contains("function prepareFBXForViewer"))html=html.replace(marker,helper+marker);String oldFbx="const obj=await new Promise((res,rej)=>new FBXLoader().load(url,res,undefined,rej));\n      registerModel(obj,f.name,obj.animations||[]);";String newFbx="const obj=await new Promise((res,rej)=>new FBXLoader().load(url,res,undefined,rej));\n      prepareFBXForViewer(obj);\n      registerModel(obj,f.name,obj.animations||[]);\n      requestAnimationFrame(()=>requestAnimationFrame(()=>{\n        if(root===obj){prepareFBXForViewer(obj);centerAndFit(obj);updateTransformFields();}\n      }));";if(html.contains(oldFbx))html=html.replace(oldFbx,newFbx);webView.loadDataWithBaseURL(ASSET_BASE,html,"text/html","UTF-8",null);}catch(Exception e){webView.loadUrl(ASSET_BASE+"index.html");}}
     private String readAssetText(String f)throws Exception{StringBuilder out=new StringBuilder();InputStream input=getAssets().open(f);BufferedReader r=new BufferedReader(new InputStreamReader(input,"UTF-8"));String line;while((line=r.readLine())!=null)out.append(line).append('\n');r.close();input.close();return out.toString();}
     private int fullscreenFlags(){return View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE;}
     private void enableImmersiveFullscreen(){getWindow().getDecorView().setSystemUiVisibility(fullscreenFlags());}

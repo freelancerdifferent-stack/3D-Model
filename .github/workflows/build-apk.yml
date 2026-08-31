@@ -100,7 +100,7 @@ jobs:
       - name: Restore selected Mesh Transform panel
         run: python3 tools/patch_mesh_transform_panel_v14.py
       - name: Add Mesh Layers rename delete and add mesh
-        run: python3 tools/patch_mesh_layer_manage_v15.py
+        run: python3 tools/patch_mesh_layer_manage_v16.py
       - name: Make runtime fully offline
         run: python3 tools/patch_offline_runtime.py
       - name: Verify editor pipeline and offline runtime
@@ -113,7 +113,7 @@ jobs:
           grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html
           grep -q "EXPORT_ALL_V13" app/src/main/assets/index.html
           grep -q "MESH_TRANSFORM_PANEL_V14" app/src/main/assets/index.html
-          grep -q "MESH_LAYER_MANAGE_V15" app/src/main/assets/index.html
+          grep -q "MESH_LAYER_MANAGE_V16" app/src/main/assets/index.html
           grep -q "meshAddInput" app/src/main/assets/index.html
           grep -q "renameMeshLayer" app/src/main/assets/index.html
           grep -q "deleteMeshLayer" app/src/main/assets/index.html

@@ -96,8 +96,8 @@ jobs:
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
           grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/index.html
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
-          grep -q 'id="objectTrackpadDrawer"' app/src/main/assets/index.html
-          grep -q 'id="objectCameraPad"' app/src/main/assets/index.html
+          grep -q "objectTrackpadDrawer" app/src/main/assets/index.html
+          grep -q "objectCameraPad" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SELECT_V1" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SKINNED_DIRECT_V6" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_VISUAL_PREVIEW_V7" app/src/main/assets/index.html

@@ -70,6 +70,8 @@ jobs:
         run: python3 tools/patch_part_longpress_fix_v2.py
       - name: Turn existing Select into Live Edit portal
         run: python3 tools/patch_live_edit_select.py
+      - name: Add isolated Orbit trackpad for Live Edit
+        run: python3 tools/patch_live_edit_orbit_trackpad_v8.py
       - name: Wire Live Edit Move Rotate Scale
         run: python3 tools/patch_live_edit_transform.py
       - name: Fix Live Edit transforms with dedicated gesture path
@@ -118,6 +120,9 @@ jobs:
           grep -q "MESH_PART_LOCK_V2" app/src/main/assets/index.html
           grep -q "lockedPartGuard" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SELECT_V1" app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_ORBIT_TRACKPAD_V8" app/src/main/assets/index.html
+          grep -q 'id="liveOrbitTrackpad"' app/src/main/assets/index.html
+          grep -q 'id="liveOrbitSurface"' app/src/main/assets/index.html
           grep -q "LIVE_EDIT_TRANSFORM_V1" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_TRANSFORM_V2" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SELECTION_STATE_V2" app/src/main/assets/index.html

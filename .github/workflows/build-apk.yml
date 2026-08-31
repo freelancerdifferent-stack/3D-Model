@@ -101,6 +101,8 @@ jobs:
         run: python3 tools/patch_mesh_transform_panel_v14.py
       - name: Add Mesh Layers rename delete and add mesh
         run: python3 tools/patch_mesh_layer_manage_v16.py
+      - name: Fix adaptive feet-aligned floor grid
+        run: python3 tools/patch_adaptive_floor_grid_v17.py
       - name: Make runtime fully offline
         run: python3 tools/patch_offline_runtime.py
       - name: Verify editor pipeline and offline runtime
@@ -114,6 +116,7 @@ jobs:
           grep -q "EXPORT_ALL_V13" app/src/main/assets/index.html
           grep -q "MESH_TRANSFORM_PANEL_V14" app/src/main/assets/index.html
           grep -q "MESH_LAYER_MANAGE_V16" app/src/main/assets/index.html
+          grep -q "ADAPTIVE_FLOOR_GRID_V17" app/src/main/assets/index.html
           grep -q "meshAddInput" app/src/main/assets/index.html
           grep -q "renameMeshLayer" app/src/main/assets/index.html
           grep -q "deleteMeshLayer" app/src/main/assets/index.html

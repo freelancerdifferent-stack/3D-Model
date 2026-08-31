@@ -63,12 +63,12 @@ jobs:
         run: python3 tools/patch_live_edit_touch_transform_v4.py
       - name: Use native Android Touch Events for Live Edit transforms
         run: python3 tools/patch_live_edit_touch_transform_v5.py
-      - name: Move rendered SkinnedMesh through carrier transform
-        run: python3 tools/patch_live_edit_mesh_carrier_v5.py
       - name: Patch Project Manager
         run: python3 tools/patch_project_manager.py
       - name: Patch selectable project folder storage
         run: python3 tools/patch_project_folder_saf.py
+      - name: Fix SkinnedMesh direct transform and saved project recovery
+        run: python3 tools/patch_skinned_mesh_direct_v6.py
       - name: Verify editor pipeline
         run: |
           grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
@@ -94,7 +94,8 @@ jobs:
           grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V3" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V4" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V5" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_MESH_CARRIER_V5" app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_SKINNED_DIRECT_V6" app/src/main/assets/index.html
+          ! grep -q "LIVE_EDIT_MESH_CARRIER_V5" app/src/main/assets/index.html
           grep -q 'id="liveEditSelectBtn"' app/src/main/assets/index.html
           grep -q 'id="liveMoveBtn"' app/src/main/assets/index.html
           grep -q 'id="liveRotateBtn"' app/src/main/assets/index.html

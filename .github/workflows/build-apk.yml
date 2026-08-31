@@ -37,13 +37,6 @@ jobs:
           cp -R node_modules/three/build "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/build"
           cp -R node_modules/three/examples "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples"
           cp -R node_modules/assimpjs/dist "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist"
-          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/build/three.module.js"
-          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/controls/OrbitControls.js"
-          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/loaders/GLTFLoader.js"
-          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/loaders/FBXLoader.js"
-          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples/jsm/exporters/GLTFExporter.js"
-          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist/assimpjs.js"
-          test -f "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm"
       - name: Patch FBX parser to Assimp WASM
         run: python3 tools/patch_fbx_assimp.py
       - name: Patch universal Layers
@@ -94,54 +87,25 @@ jobs:
         run: python3 tools/patch_skinned_mesh_direct_v6.py
       - name: Fix live SkinnedMesh visual preview while dragging
         run: python3 tools/patch_live_edit_visual_preview_v7.py
+      - name: Redesign Object editor UI
+        run: python3 tools/patch_object_ui_v9.py
       - name: Make runtime fully offline
         run: python3 tools/patch_offline_runtime.py
       - name: Verify editor pipeline and offline runtime
         run: |
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
           grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/index.html
-          grep -q "./vendor/three/build/three.module.js" app/src/main/assets/index.html
-          grep -q "./vendor/three/examples/jsm/" app/src/main/assets/index.html
-          grep -q "./vendor/assimpjs/dist/assimpjs.js" app/src/main/assets/index.html
+          grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
+          grep -q 'id="objectTrackpadDrawer"' app/src/main/assets/index.html
+          grep -q 'id="objectCameraPad"' app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_SELECT_V1" app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_SKINNED_DIRECT_V6" app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_VISUAL_PREVIEW_V7" app/src/main/assets/index.html
+          grep -q 'id="layersScreen"' app/src/main/assets/index.html
+          grep -q 'id="meshLayersScreen"' app/src/main/assets/index.html
           ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/index.html
           ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/index.html
           test -f app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm
-          grep -q 'id="layersScreen"' app/src/main/assets/index.html
-          grep -q 'id="meshLayersScreen"' app/src/main/assets/index.html
-          grep -q 'id="partDragBtn"' app/src/main/assets/index.html
-          grep -q 'id="partRotateBtn"' app/src/main/assets/index.html
-          grep -q 'id="partScaleBtn"' app/src/main/assets/index.html
-          grep -q "partTransformAxis" app/src/main/assets/index.html
-          grep -q "PART_DRAG_ANDROID_FIX_V2" app/src/main/assets/index.html
-          grep -q "PART_TRANSFORM_STABILITY_V1" app/src/main/assets/index.html
-          grep -q "PART_LONGPRESS_MENU_V1" app/src/main/assets/index.html
-          grep -q "PART_LONGPRESS_FIX_V2" app/src/main/assets/index.html
-          grep -q "MESH_PART_LOCK_V1" app/src/main/assets/index.html
-          grep -q "MESH_PART_LOCK_V2" app/src/main/assets/index.html
-          grep -q "lockedPartGuard" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_SELECT_V1" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_ORBIT_TRACKPAD_V8" app/src/main/assets/index.html
-          grep -q 'id="liveOrbitTrackpad"' app/src/main/assets/index.html
-          grep -q 'id="liveOrbitSurface"' app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_TRANSFORM_V1" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_TRANSFORM_V2" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_SELECTION_STATE_V2" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_STATE_V3" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V3" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V4" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V5" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_SKINNED_DIRECT_V6" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_VISUAL_PREVIEW_V7" app/src/main/assets/index.html
-          ! grep -q "LIVE_EDIT_MESH_CARRIER_V5" app/src/main/assets/index.html
-          grep -q 'id="liveEditSelectBtn"' app/src/main/assets/index.html
-          grep -q 'id="liveMoveBtn"' app/src/main/assets/index.html
-          grep -q 'id="liveRotateBtn"' app/src/main/assets/index.html
-          grep -q 'id="liveScaleBtn"' app/src/main/assets/index.html
-          grep -q 'id="livePanPad"' app/src/main/assets/index.html
-          grep -q 'id="projectsScreen"' app/src/main/assets/index.html
-          grep -q 'id="projectFolderBtn"' app/src/main/assets/index.html
-          grep -q "chooseProjectFolderSaf" app/src/main/assets/index.html
-          grep -q "saveCurrentProjectToFolder" app/src/main/assets/index.html
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:

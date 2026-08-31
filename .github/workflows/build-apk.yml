@@ -69,6 +69,8 @@ jobs:
         run: python3 tools/patch_project_folder_saf.py
       - name: Fix SkinnedMesh direct transform and saved project recovery
         run: python3 tools/patch_skinned_mesh_direct_v6.py
+      - name: Fix live SkinnedMesh visual preview while dragging
+        run: python3 tools/patch_live_edit_visual_preview_v7.py
       - name: Verify editor pipeline
         run: |
           grep -q "assimpjs@0.0.10" app/src/main/assets/index.html
@@ -95,6 +97,7 @@ jobs:
           grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V4" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_TOUCH_TRANSFORM_V5" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SKINNED_DIRECT_V6" app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_VISUAL_PREVIEW_V7" app/src/main/assets/index.html
           ! grep -q "LIVE_EDIT_MESH_CARRIER_V5" app/src/main/assets/index.html
           grep -q 'id="liveEditSelectBtn"' app/src/main/assets/index.html
           grep -q 'id="liveMoveBtn"' app/src/main/assets/index.html

@@ -97,6 +97,8 @@ jobs:
         run: python3 tools/patch_live_edit_visual_preview_v7.py
       - name: Redesign Object editor UI
         run: python3 tools/patch_object_ui_v9.py
+      - name: Add dedicated Skeleton live edit mode
+        run: python3 tools/patch_skeleton_live_edit_v20.py
       - name: Add real Object undo redo history
         run: python3 tools/patch_object_undo_redo_v10.py
       - name: Add touch scrub adjusters to Transform fields
@@ -129,6 +131,12 @@ jobs:
           grep -q "finishProjectWrite" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "PROJECT_IMPORT_JSON_MIME_V18" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
+          grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
+          grep -q "skeletonModeBtn" app/src/main/assets/index.html
+          grep -q "skeletonViewBtn" app/src/main/assets/index.html
+          grep -q "skeletonAddBoneBtn" app/src/main/assets/index.html
+          grep -q "skeletonDuplicateBoneBtn" app/src/main/assets/index.html
+          grep -q "skeletonRigBtn" app/src/main/assets/index.html
           grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
           grep -q "TRANSFORM_ADJUST_SCRUB_V11" app/src/main/assets/index.html
           grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html

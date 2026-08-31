@@ -49,6 +49,8 @@ jobs:
         run: python3 tools/patch_part_longpress_fix_v2.py
       - name: Turn existing Select into Live Edit portal
         run: python3 tools/patch_live_edit_select.py
+      - name: Wire Live Edit Move Rotate Scale
+        run: python3 tools/patch_live_edit_transform.py
       - name: Patch Project Manager
         run: python3 tools/patch_project_manager.py
       - name: Patch selectable project folder storage
@@ -71,7 +73,11 @@ jobs:
           grep -q "MESH_PART_LOCK_V2" app/src/main/assets/index.html
           grep -q "lockedPartGuard" app/src/main/assets/index.html
           grep -q "LIVE_EDIT_SELECT_V1" app/src/main/assets/index.html
+          grep -q "LIVE_EDIT_TRANSFORM_V1" app/src/main/assets/index.html
           grep -q 'id="liveEditSelectBtn"' app/src/main/assets/index.html
+          grep -q 'id="liveMoveBtn"' app/src/main/assets/index.html
+          grep -q 'id="liveRotateBtn"' app/src/main/assets/index.html
+          grep -q 'id="liveScaleBtn"' app/src/main/assets/index.html
           grep -q 'id="livePanPad"' app/src/main/assets/index.html
           grep -q 'id="projectsScreen"' app/src/main/assets/index.html
           grep -q 'id="projectFolderBtn"' app/src/main/assets/index.html

@@ -89,6 +89,8 @@ jobs:
         run: python3 tools/patch_project_import_v18.py
       - name: Add Export Project support
         run: python3 tools/patch_project_export_v19.py
+      - name: Make Save Export Import Project one roundtrip format
+        run: python3 tools/patch_project_roundtrip_v20.py
       - name: Fix SkinnedMesh direct transform and saved project recovery
         run: python3 tools/patch_skinned_mesh_direct_v6.py
       - name: Fix live SkinnedMesh visual preview while dragging
@@ -116,11 +118,15 @@ jobs:
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
           grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/index.html
           grep -q "PROJECT_IMPORT_V18" app/src/main/assets/index.html
-          grep -q "projectImportBtn" app/src/main/assets/index.html
-          grep -q "importProjectFile" app/src/main/assets/index.html
           grep -q "PROJECT_EXPORT_V19" app/src/main/assets/index.html
-          grep -q "projectExportBtn" app/src/main/assets/index.html
-          grep -q "exportCurrentProjectPackage" app/src/main/assets/index.html
+          grep -q "PROJECT_ROUNDTRIP_V20" app/src/main/assets/index.html
+          grep -q "saveProjectV20" app/src/main/assets/index.html
+          grep -q "exportProjectV20" app/src/main/assets/index.html
+          grep -q "importProjectV20" app/src/main/assets/index.html
+          grep -q "PROJECT_CHUNK_WRITER_V20" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
+          grep -q "beginProjectWrite" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
+          grep -q "appendProjectWriteChunk" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
+          grep -q "finishProjectWrite" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "PROJECT_IMPORT_JSON_MIME_V18" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
           grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html

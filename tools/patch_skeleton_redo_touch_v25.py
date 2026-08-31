@@ -1,17 +1,19 @@
 from pathlib import Path
+import subprocess
 
 p=Path('app/src/main/assets/index.html')
 s=p.read_text(encoding='utf-8')
 if 'SKELETON_REDO_TOUCH_V25' in s:
-    print('Skeleton redo touch v25 already applied'); raise SystemExit(0)
-if 'SKELETON_REDO_FIX_V22' not in s:
-    raise SystemExit('Skeleton redo fix v22 must run first')
+    print('Skeleton redo touch v25 already applied')
+else:
+    if 'SKELETON_REDO_FIX_V22' not in s:
+        raise SystemExit('Skeleton redo fix v22 must run first')
 
-anchor=" setInterval(()=>{syncHelper();if(skeletonLiveEditMode){controls.enabled=false;const badge=$('liveEditBadge');if(badge){badge.textContent='LIVE EDIT Skeleton';badge.classList.add('on')}}},300);"
-if anchor not in s:
-    raise SystemExit('Skeleton interval anchor missing')
+    anchor=" setInterval(()=>{syncHelper();if(skeletonLiveEditMode){controls.enabled=false;const badge=$('liveEditBadge');if(badge){badge.textContent='LIVE EDIT Skeleton';badge.classList.add('on')}}},300);"
+    if anchor not in s:
+        raise SystemExit('Skeleton interval anchor missing')
 
-js=r'''
+    js=r'''
  // SKELETON_REDO_TOUCH_V25
  // Android WebView can still let the Object history route overwrite the shared
  // button state between Skeleton updates. Own the physical touch route directly
@@ -49,6 +51,10 @@ js=r'''
  setInterval(forceSkeletonHistoryButtonsV25,80);
 '''
 
-s=s.replace(anchor,js+'\n'+anchor,1)
-p.write_text(s,encoding='utf-8')
-print('Skeleton Redo touch v25 applied')
+    s=s.replace(anchor,js+'\n'+anchor,1)
+    p.write_text(s,encoding='utf-8')
+    print('Skeleton Redo touch v25 applied')
+
+# Build pipeline already executes v25 after v24. Chain the functional Rig patch
+# here so existing workflow order stays stable while Rig v26 is applied immediately.
+subprocess.run(['python3','tools/patch_skeleton_rig_v26.py'],check=True)

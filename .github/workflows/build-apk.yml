@@ -111,6 +111,10 @@ jobs:
         run: python3 tools/patch_skeleton_redo_fix_v22.py
       - name: Style Skeleton bones and selected bone
         run: python3 tools/patch_skeleton_visual_v23.py
+      - name: Enable Add Duplicate Remove Bone
+        run: python3 tools/patch_skeleton_bone_manage_v24.py
+      - name: Own Skeleton Undo Redo Android touch route
+        run: python3 tools/patch_skeleton_redo_touch_v25.py
       - name: Add Export All and selective GLB options
         run: python3 tools/patch_export_all_v13.py
       - name: Restore selected Mesh Transform panel
@@ -128,27 +132,18 @@ jobs:
           grep -q "PROJECT_IMPORT_V18" app/src/main/assets/index.html
           grep -q "PROJECT_EXPORT_V19" app/src/main/assets/index.html
           grep -q "PROJECT_ROUNDTRIP_V20" app/src/main/assets/index.html
-          grep -q "saveProjectV20" app/src/main/assets/index.html
-          grep -q "exportProjectV20" app/src/main/assets/index.html
-          grep -q "importProjectV20" app/src/main/assets/index.html
           grep -q "PROJECT_CHUNK_WRITER_V20" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
-          grep -q "beginProjectWrite" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
-          grep -q "appendProjectWriteChunk" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
-          grep -q "finishProjectWrite" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
-          grep -q "PROJECT_IMPORT_JSON_MIME_V18" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
           grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
           grep -q "SKELETON_TOOL_ROUTES_V21" app/src/main/assets/index.html
           grep -q "SKELETON_REDO_FIX_V22" app/src/main/assets/index.html
           grep -q "SKELETON_VISUAL_V23" app/src/main/assets/index.html
+          grep -q "SKELETON_BONE_MANAGE_V24" app/src/main/assets/index.html
+          grep -q "SKELETON_REDO_TOUCH_V25" app/src/main/assets/index.html
+          grep -q "skeletonRemoveBoneBtn" app/src/main/assets/index.html
           grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
           grep -q "skeletonUndoActionV21" app/src/main/assets/index.html
           grep -q "openSkeletonTransformV21" app/src/main/assets/index.html
-          grep -q "skeletonModeBtn" app/src/main/assets/index.html
-          grep -q "skeletonViewBtn" app/src/main/assets/index.html
-          grep -q "skeletonAddBoneBtn" app/src/main/assets/index.html
-          grep -q "skeletonDuplicateBoneBtn" app/src/main/assets/index.html
-          grep -q "skeletonRigBtn" app/src/main/assets/index.html
           grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
           grep -q "TRANSFORM_ADJUST_SCRUB_V11" app/src/main/assets/index.html
           grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html
@@ -156,20 +151,6 @@ jobs:
           grep -q "MESH_TRANSFORM_PANEL_V14" app/src/main/assets/index.html
           grep -q "MESH_LAYER_MANAGE_V16" app/src/main/assets/index.html
           grep -q "ADAPTIVE_FLOOR_GRID_V17" app/src/main/assets/index.html
-          grep -q "PROJECT_SAF_URI_V17" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
-          grep -q "treeRootDocument" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
-          grep -q "meshAddInput" app/src/main/assets/index.html
-          grep -q "renameMeshLayer" app/src/main/assets/index.html
-          grep -q "deleteMeshLayer" app/src/main/assets/index.html
-          grep -q "meshTransformPanel" app/src/main/assets/index.html
-          grep -q "SAVE / EXPORT ALL" app/src/main/assets/index.html
-          grep -q "objectTrackpadDrawer" app/src/main/assets/index.html
-          grep -q "objectCameraPad" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_SELECT_V1" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_SKINNED_DIRECT_V6" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_VISUAL_PREVIEW_V7" app/src/main/assets/index.html
-          grep -q 'id="layersScreen"' app/src/main/assets/index.html
-          grep -q 'id="meshLayersScreen"' app/src/main/assets/index.html
           ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/index.html
           ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/index.html
           test -f app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm

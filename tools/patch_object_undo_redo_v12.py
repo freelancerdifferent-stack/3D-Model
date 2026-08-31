@@ -5,9 +5,6 @@ if 'OBJECT_UNDO_REDO_V12' in s:
     print('Object undo redo v12 already applied'); raise SystemExit(0)
 js=r'''
 // OBJECT_UNDO_REDO_V12
-// Robust history capture. v10 tried to replace liveV5Start/liveV5End after those
-// functions had already been registered as event listeners, so Android touches
-// still called the old function references and no history command was recorded.
 (function(){
  const undoBtn=$('objectUndoBtn'), redoBtn=$('objectRedoBtn');
  if(!undoBtn||!redoBtn)return;
@@ -37,8 +34,8 @@ js=r'''
    if(m.isSkinnedMesh&&m.skeleton){try{m.skeleton.update()}catch(_){}}
    if(typeof showStrongPartSelection==='function'&&m.isMesh)try{showStrongPartSelection(m)}catch(_){}
    if(typeof partDragHelper!=='undefined'&&partDragHelper)try{partDragHelper.update()}catch(_){}
-   // keep numeric Transform fields synced when whole model is changed
    try{if(typeof syncTransformUI==='function')syncTransformUI()}catch(_){}
+   try{if(typeof syncMeshTransformUI==='function')syncMeshTransformUI()}catch(_){}
  }
  function refresh(){
    undoBtn.disabled=!undoStack.length;redoBtn.disabled=!redoStack.length;
@@ -51,25 +48,18 @@ js=r'''
  }
  undoBtn.onclick=e=>{e.preventDefault();e.stopPropagation();const c=undoStack.pop();if(!c){msg('Tidak ada perubahan untuk Undo');return;}apply(c.before);redoStack.push(c);refresh();msg('Undo '+c.label)};
  redoBtn.onclick=e=>{e.preventDefault();e.stopPropagation();const c=redoStack.pop();if(!c){msg('Tidak ada perubahan untuk Redo');return;}apply(c.after);undoStack.push(c);refresh();msg('Redo '+c.label)};
-
- // Capture on document BEFORE the existing viewport handlers. Existing Live Edit
- // code calls stopImmediatePropagation on the viewport, so listening there after
- // registration is too late.
  document.addEventListener('touchstart',ev=>{
    if(typeof liveEditSelectMode==='undefined'||!liveEditSelectMode||typeof liveEditTransformMode==='undefined'||!liveEditTransformMode)return;
    if(ev.target!==canvas)return;
    const m=selectedMesh(); if(!m)return;
    meshPending={before:cloneState(m),mesh:m,mode:liveEditTransformMode,touchId:ev.changedTouches&&ev.changedTouches[0]?ev.changedTouches[0].identifier:null};
  },{capture:true,passive:true});
- document.addEventListener('touchend',ev=>{
+ document.addEventListener('touchend',()=>{
    if(!meshPending)return;
    const p=meshPending;
-   // Let liveV5End apply its final touch coordinate first.
-   setTimeout(()=>{if(meshPending!==p)return;const after=cloneState(p.mesh);push(p.before,after,p.mode==='move'?'Move Mesh':p.mode==='rotate'?'Rotate Mesh':'Scale Mesh');meshPending=null;},0);
+   setTimeout(()=>{if(meshPending!==p)return;push(p.before,cloneState(p.mesh),p.mode==='move'?'Move Mesh':p.mode==='rotate'?'Rotate Mesh':'Scale Mesh');meshPending=null;},0);
  },{capture:true,passive:true});
  document.addEventListener('touchcancel',()=>{meshPending=null},{capture:true,passive:true});
-
- // Whole-model Transform numeric/scrub fields.
  ['px','py','pz','rx','ry','rz','sx','sy','sz'].forEach(id=>{
    const el=$(id);if(!el)return;
    const begin=()=>{const m=modelTarget();if(m&&!fieldPending.has(id))fieldPending.set(id,cloneState(m));};
@@ -77,6 +67,9 @@ js=r'''
    el.addEventListener('pointerdown',begin,true);
    el.addEventListener('change',()=>{const before=fieldPending.get(id);fieldPending.delete(id);const m=modelTarget();if(before&&m)push(before,cloneState(m),'Transform Model')},true);
  });
+ window.objectHistorySnapshot=cloneState;
+ window.objectHistoryPush=push;
+ window.objectHistoryApply=apply;
  window.objectUndoRedoClear=function(){undoStack.length=0;redoStack.length=0;meshPending=null;fieldPending.clear();refresh()};
  refresh();
 })();

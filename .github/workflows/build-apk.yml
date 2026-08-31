@@ -109,6 +109,8 @@ jobs:
         run: python3 tools/patch_skeleton_tool_routes_v21.py
       - name: Fix Skeleton Redo on Android
         run: python3 tools/patch_skeleton_redo_fix_v22.py
+      - name: Style Skeleton bones and selected bone
+        run: python3 tools/patch_skeleton_visual_v23.py
       - name: Add Export All and selective GLB options
         run: python3 tools/patch_export_all_v13.py
       - name: Restore selected Mesh Transform panel
@@ -138,6 +140,7 @@ jobs:
           grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
           grep -q "SKELETON_TOOL_ROUTES_V21" app/src/main/assets/index.html
           grep -q "SKELETON_REDO_FIX_V22" app/src/main/assets/index.html
+          grep -q "SKELETON_VISUAL_V23" app/src/main/assets/index.html
           grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
           grep -q "skeletonUndoActionV21" app/src/main/assets/index.html
           grep -q "openSkeletonTransformV21" app/src/main/assets/index.html

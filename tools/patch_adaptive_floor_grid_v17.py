@@ -50,3 +50,7 @@ if old2 not in s: raise SystemExit('centerAndFit grid marker missing')
 s=s.replace(old2,new2,1)
 p.write_text(s,encoding='utf-8')
 print('Adaptive floor grid v17 applied')
+
+# Keep Skeleton bone-management isolated in its own patch while ensuring the
+# existing build pipeline applies it without changing Mesh/Object routes.
+exec(Path('tools/patch_skeleton_bone_manage_v24.py').read_text(encoding='utf-8'))

@@ -129,6 +129,8 @@ jobs:
         run: python3 tools/patch_offline_runtime.py
       - name: Split Edit and Create into independent runtimes
         run: python3 tools/patch_create_machine_v32.py
+      - name: Add Auto UI shell only
+        run: python3 tools/patch_auto_ui_v34.py
       - name: Verify editor pipeline and isolated machines
         run: |
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
@@ -148,6 +150,7 @@ jobs:
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "window.__OBJECT_MACHINE__='edit'" app/src/main/assets/index.html
           grep -q "window.location.href='create.html'" app/src/main/assets/index.html
+          grep -q "window.location.href='auto.html'" app/src/main/assets/index.html
           test -f app/src/main/assets/create.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "CREATE_MACHINE_STORAGE_V32" app/src/main/assets/create.html
@@ -156,6 +159,10 @@ jobs:
           grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/create.html
           grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/create.html
           grep -q "SKELETON_RIG_V26" app/src/main/assets/create.html
+          test -f app/src/main/assets/auto.html
+          grep -q "AUTO_UI_V34" app/src/main/assets/auto.html
+          grep -q "window.__AUTO_ENGINE_ENABLED__=false" app/src/main/assets/auto.html
+          grep -q "AUTO • GLB • FBX • PNG" app/src/main/assets/auto.html
           grep -q 'data-go="editorScreen"' app/src/main/assets/index.html
           grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
           grep -q "SKELETON_TRACKPAD_ZOOM_V27" app/src/main/assets/index.html

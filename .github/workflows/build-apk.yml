@@ -99,6 +99,8 @@ jobs:
         run: python3 tools/patch_object_ui_v9.py
       - name: Add dedicated Skeleton live edit mode
         run: python3 tools/patch_skeleton_live_edit_v20.py
+      - name: Add Skeleton trackpad pinch zoom
+        run: python3 tools/patch_skeleton_trackpad_zoom_v27.py
       - name: Add real Object undo redo history
         run: python3 tools/patch_object_undo_redo_v10.py
       - name: Add touch scrub adjusters to Transform fields
@@ -135,6 +137,7 @@ jobs:
           grep -q "PROJECT_CHUNK_WRITER_V20" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
           grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
+          grep -q "SKELETON_TRACKPAD_ZOOM_V27" app/src/main/assets/index.html
           grep -q "SKELETON_TOOL_ROUTES_V21" app/src/main/assets/index.html
           grep -q "SKELETON_REDO_FIX_V22" app/src/main/assets/index.html
           grep -q "SKELETON_VISUAL_V23" app/src/main/assets/index.html

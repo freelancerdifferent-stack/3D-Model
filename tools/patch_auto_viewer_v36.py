@@ -9,46 +9,43 @@ if 'AUTO_VIEWER_V36' in s:
     print('Auto Viewer v36 already applied')
     raise SystemExit(0)
 
-# Auto Viewer keeps the proven editor viewport/Three.js engine intact. Only the
-# presentation is changed; do not alter the editor grid tracks because the base
-# renderer/canvas sizing depends on that layout.
+# AUTO VIEWER RULE: the engine/layout is the exact Edit Object baseline already
+# present in auto.html (auto.html itself is cloned from the fully-patched Edit
+# runtime). This patch only adds Auto Viewer presentation overlays. Never change
+# .editor grid tracks, viewport geometry, canvas, camera, renderer or model state.
 css=r'''
 /* AUTO_VIEWER_V36 */
-html[data-object-machine="auto"] #editorScreen .toolrail{display:none!important}
-html[data-object-machine="auto"] #editorScreen .props{display:none!important}
-html[data-object-machine="auto"] #editorScreen .viewport{background:#17191b;min-width:0;min-height:0}
+html[data-object-machine="auto"] #editorScreen .viewport{background:#17191b}
 html[data-object-machine="auto"] #editorScreen .overleft{display:none!important}
-html[data-object-machine="auto"] #editorScreen .overright{top:14px;right:82px}
-html[data-object-machine="auto"] #editorScreen .viewtools{top:14px;right:10px;border-radius:12px;background:#101820e8}
-html[data-object-machine="auto"] #editorScreen .viewtools button{width:48px;height:46px}
-html[data-object-machine="auto"] #editorScreen .timeline{left:13%;right:10%;bottom:112px;height:64px;border-radius:16px;padding:0 14px;background:#0b1018ee;border:1px solid #242d38}
-html[data-object-machine="auto"] #editorScreen .timeline #playBtn{font-size:25px}
-html[data-object-machine="auto"] #editorScreen .timeline #frameText{font-size:22px;min-width:28px;text-align:center}
-html[data-object-machine="auto"] #editorScreen .timeline #durationText{font-size:21px;min-width:44px;text-align:right}
+html[data-object-machine="auto"] #editorScreen .viewtools{border-radius:12px;background:#101820e8}
+html[data-object-machine="auto"] #editorScreen .timeline{border-radius:16px;background:#0b1018ee;border:1px solid #242d38}
 html[data-object-machine="auto"] #editorScreen .timeline input{accent-color:#2f80ff}
 html[data-object-machine="auto"] #autoViewerAnimBarV36{position:absolute;z-index:7;left:18px;top:14px;display:flex;gap:10px;align-items:center;max-width:calc(100% - 190px)}
 html[data-object-machine="auto"] #autoViewerAnimBarV36 .anim-shell{display:flex;align-items:center;min-width:210px;max-width:340px;height:54px;padding:0 10px 0 16px;border-radius:18px;background:#242424e8;border:1px solid #313131;box-shadow:0 8px 24px #0005}
 html[data-object-machine="auto"] #autoViewerAnimBarV36 select{width:100%;border:0;background:transparent;color:#f1f1f1;font-size:18px;outline:none}
 html[data-object-machine="auto"] #autoViewerAnimBarV36 select option{background:#14191f;color:#fff}
 html[data-object-machine="auto"] #autoViewerDownloadV36{width:54px;height:54px;border:0;border-radius:14px;background:#baff36;color:#071006;font-size:25px;font-weight:900;box-shadow:0 6px 18px #0005}
-html[data-object-machine="auto"] #autoViewerClipBarV36{position:absolute;z-index:7;left:18px;right:18px;bottom:28px;height:58px;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid #242a31;background:#151515dd;color:#f3f3f3;font-size:20px}
+html[data-object-machine="auto"] #autoViewerClipBarV36{position:absolute;z-index:7;left:18px;right:18px;bottom:18px;height:58px;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid #242a31;background:#151515dd;color:#f3f3f3;font-size:20px}
 html[data-object-machine="auto"] #autoViewerClipBarV36 .clip-arrow{font-size:28px;font-weight:900}
 html[data-object-machine="auto"] #autoViewerClipNameV36{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-object-machine="auto"] #autoViewerClipSourceV36{margin-left:auto;color:#73777d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
-@media(max-width:600px){html[data-object-machine="auto"] #autoViewerAnimBarV36{left:12px;max-width:calc(100% - 92px)}html[data-object-machine="auto"] #autoViewerAnimBarV36 .anim-shell{min-width:155px;max-width:250px;height:48px;border-radius:15px}html[data-object-machine="auto"] #autoViewerAnimBarV36 select{font-size:15px}html[data-object-machine="auto"] #autoViewerDownloadV36{width:48px;height:48px;font-size:21px}html[data-object-machine="auto"] #editorScreen .overright{right:66px;top:12px}html[data-object-machine="auto"] #editorScreen .timeline{left:12%;right:10%;bottom:92px;height:54px}html[data-object-machine="auto"] #autoViewerClipBarV36{left:12px;right:12px;bottom:18px;height:50px;font-size:16px}html[data-object-machine="auto"] #autoViewerClipNameV36{font-size:17px}}
+@media(max-width:600px){html[data-object-machine="auto"] #autoViewerAnimBarV36{left:12px;max-width:calc(100% - 92px)}html[data-object-machine="auto"] #autoViewerAnimBarV36 .anim-shell{min-width:155px;max-width:250px;height:48px;border-radius:15px}html[data-object-machine="auto"] #autoViewerAnimBarV36 select{font-size:15px}html[data-object-machine="auto"] #autoViewerDownloadV36{width:48px;height:48px;font-size:21px}html[data-object-machine="auto"] #autoViewerClipBarV36{left:12px;right:12px;bottom:12px;height:50px;font-size:16px}html[data-object-machine="auto"] #autoViewerClipNameV36{font-size:17px}}
 '''
 s=s.replace('</style>',css+'\n</style>',1)
 
 js=r'''
 // AUTO_VIEWER_V36
+// Engine source: Edit -> Object. Auto does not create a second renderer here.
 window.__autoMachineRuntimeV35.viewerEngine=true;
-window.__autoMachineRuntimeV35.viewerEngineVersion='v36';
+window.__autoMachineRuntimeV35.viewerEngineVersion='v36-edit-object-baseline';
 requestAnimationFrame(()=>{
-  const viewport=document.querySelector('#editorScreen .viewport');
+  const editor=document.getElementById('editorScreen');
+  const viewport=editor?.querySelector('.viewport');
   const animSelect=document.getElementById('animSelect');
-  const timeline=document.querySelector('#editorScreen .timeline');
-  if(!viewport || !animSelect || !timeline) return;
+  if(!editor || !viewport || !animSelect) return;
 
+  // Presentation only: reuse the real Edit animation selector with all of its
+  // existing listeners/state. No replacement animation engine is introduced.
   const oldWrap=animSelect.parentElement;
   const bar=document.createElement('div');
   bar.id='autoViewerAnimBarV36';
@@ -74,45 +71,31 @@ requestAnimationFrame(()=>{
   if(fileLabel) new MutationObserver(syncClip).observe(fileLabel,{childList:true,subtree:true});
   syncClip();
 
-  document.getElementById('autoViewerDownloadV36').onclick=()=>{
-    const exportBtn=document.getElementById('exportBtn');
-    if(!exportBtn){msg('Mesin export tidak tersedia');return}
-    exportBtn.click();
-  };
+  document.getElementById('autoViewerDownloadV36').onclick=()=>document.getElementById('exportBtn')?.click();
 
-  // Force a real Three.js viewport resize after Viewer becomes visible. The
-  // previous Auto CSS collapsed/repositioned the editor grid, leaving the
-  // renderer canvas with an invalid visible area even though the model loaded.
-  const refreshViewport=()=>{
-    requestAnimationFrame(()=>{
-      window.dispatchEvent(new Event('resize'));
-      setTimeout(()=>window.dispatchEvent(new Event('resize')),120);
-    });
-  };
   const viewer=document.getElementById('autoViewerNavV35');
   const nav=document.querySelector('.bottomnav');
-  if(viewer && nav){
-    viewer.onclick=()=>{
-      nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
-      viewer.classList.add('active');
-      go('editorScreen');
-      refreshViewport();
-    };
-  }
+  const activateViewer=()=>{
+    if(viewer && nav){nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));viewer.classList.add('active')}
+    go('editorScreen');
+    // Use the exact same resize path expected by Edit Object after screen reveal.
+    requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+  };
+  if(viewer) viewer.onclick=activateViewer;
 
-  const viewerObserver=new MutationObserver(()=>{
-    const editor=document.getElementById('editorScreen');
-    if(editor?.classList.contains('active') && viewer && nav){
-      nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
-      viewer.classList.add('active');
+  // Import flow from Home already uses Edit's loader and model scene. When that
+  // loader opens editorScreen, only update the Auto nav state; do not reframe,
+  // replace, move or clone the loaded model/camera/scene.
+  new MutationObserver(()=>{
+    if(editor.classList.contains('active')){
+      if(viewer && nav){nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));viewer.classList.add('active')}
       syncClip();
-      refreshViewport();
+      requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
     }
-  });
-  viewerObserver.observe(document.getElementById('editorScreen'),{attributes:true,attributeFilter:['class']});
+  }).observe(editor,{attributes:true,attributeFilter:['class']});
 });
 '''
 s=s.replace('</script>',js+'\n</script>',1)
 
 p.write_text(s,encoding='utf-8')
-print('Auto Viewer v36 active: base viewport layout preserved and renderer resized when Viewer opens')
+print('Auto Viewer v36: Edit Object engine preserved exactly; Auto adds presentation only')

@@ -52,19 +52,14 @@ s=s[:i]+js+'\n'+s[i:]
 p.write_text(s,encoding='utf-8')
 print('Auto Rig portal UI v41 applied to Auto machine only')
 
-# Atomic Auto-only pipeline: portal -> machine -> runtime repair -> stable height -> centerline.
-v42=Path('tools/patch_auto_rig_machine_v42.py')
-if not v42.exists(): raise SystemExit('Auto Rig machine v42 patch missing')
-exec(compile(v42.read_text(encoding='utf-8'),str(v42),'exec'))
-
-v43=Path('tools/patch_auto_rig_fix_v43.py')
-if not v43.exists(): raise SystemExit('Auto Rig fix v43 patch missing')
-exec(compile(v43.read_text(encoding='utf-8'),str(v43),'exec'))
-
-v44=Path('tools/patch_auto_rig_height_fix_v44.py')
-if not v44.exists(): raise SystemExit('Auto Rig height fix v44 patch missing')
-exec(compile(v44.read_text(encoding='utf-8'),str(v44),'exec'))
-
-v45=Path('tools/patch_auto_rig_centerline_fix_v45.py')
-if not v45.exists(): raise SystemExit('Auto Rig centerline fix v45 patch missing')
-exec(compile(v45.read_text(encoding='utf-8'),str(v45),'exec'))
+# Atomic Auto-only pipeline.
+for script,label in [
+ ('tools/patch_auto_rig_machine_v42.py','Auto Rig machine v42'),
+ ('tools/patch_auto_rig_fix_v43.py','Auto Rig fix v43'),
+ ('tools/patch_auto_rig_height_fix_v44.py','Auto Rig height fix v44'),
+ ('tools/patch_auto_rig_centerline_fix_v45.py','Auto Rig centerline fix v45'),
+ ('tools/patch_auto_rig_reference_skeleton_v46.py','Auto Rig reference skeleton v46'),
+]:
+    q=Path(script)
+    if not q.exists(): raise SystemExit(label+' patch missing')
+    exec(compile(q.read_text(encoding='utf-8'),str(q),'exec'))

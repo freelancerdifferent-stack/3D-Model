@@ -8,7 +8,7 @@ if 'SKELETON_LIVE_EDIT_V20' not in s:
     raise SystemExit('Skeleton Live Edit v20 must run first')
 
 # Skeleton Live Edit intentionally has Undo only. Object/Mesh Redo remains owned
-# by OBJECT_UNDO_REDO_V12 and is hidden only while Skeleton mode is active.
+# by OBJECT_UNDO_REDO_V10 and is hidden only while Skeleton mode is active.
 s=s.replace('</style>',r'''
 /* SKELETON_TOOL_ROUTES_V21 — Skeleton Undo only, no Skeleton Redo */
 body.skeleton-live-v20 #editorScreen #objectRedoBtn{display:none!important}
@@ -54,13 +54,10 @@ route=r'''
      syncSkeletonUndoButtonV21();syncSkeletonTransformFieldsV21();
    }else{
      if(undoBtnV21){undoBtnV21.disabled=false;undoBtnV21.removeAttribute('aria-disabled');undoBtnV21.style.opacity='';undoBtnV21.style.pointerEvents='auto'}
-     // Hand control back to the Object/Mesh history engine immediately. This
-     // restores both Undo and Redo availability/state after leaving Skeleton.
-     setTimeout(()=>{try{window.objectHistoryRefreshV12?.()}catch(_){}},0);
+     setTimeout(()=>{try{window.objectHistoryRefreshV10?.()}catch(_){}},0);
    }
  };
 
- // Android touch ownership for Skeleton Undo only. No Redo route exists here.
  let skeletonUndoSuppressClickUntilV21=0;
  if(undoBtnV21){
    undoBtnV21.addEventListener('touchstart',ev=>{if(!skeletonLiveEditMode)return;ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation()},{capture:true,passive:false});

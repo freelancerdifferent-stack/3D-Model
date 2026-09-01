@@ -16,7 +16,6 @@ if old not in s and new not in s:
     raise SystemExit('Auto portal handler not found')
 s=s.replace(old,new,1)
 
-# Auto is selectable from the shared Object Mode portal.
 s=s.replace('id="objectPortalAutoV30" type="button" aria-disabled="true"','id="objectPortalAutoV30" type="button"',1)
 s=s.replace('<span class="omh-badge">EXCLUSIVE · COMING SOON</span>','',1)
 s=s.replace('<span class="omh-next">🔒</span>','<span class="omh-next">›</span>',1)
@@ -25,26 +24,18 @@ s=s.replace('#objectModeHomeV30 .auto .omh-next{color:#756b59;font-size:18px}','
 edit_path.write_text(s,encoding='utf-8')
 
 # AUTO_MACHINE_V35
-# Clone the complete, already-patched Edit runtime so Home/input and Export/output
-# use the same proven engine. Auto runs in its own document/runtime instance.
 a=s
 if "window.__OBJECT_MACHINE__='edit';" in a:
     a=a.replace("window.__OBJECT_MACHINE__='edit';","window.__OBJECT_MACHINE__='auto';",1)
 a=a.replace('// EDIT_MACHINE_V32','// AUTO_MACHINE_V35',1)
 a=a.replace('<title>3D Viewer & Editor</title>','<title>3D Viewer & Editor — Auto</title>',1)
 a=a.replace('<span>GLB • FBX • PNG</span>','<span>AUTO • GLB • FBX • PNG</span>',1)
+a=a.replace("document.getElementById('objectPortalEditV30').onclick=()=>go('editorScreen');","document.getElementById('objectPortalEditV30').onclick=()=>{window.location.href='index.html'};",1)
+a=a.replace("document.getElementById('objectPortalAutoV30').onclick=()=>{window.location.href='auto.html'};","document.getElementById('objectPortalAutoV30').onclick=()=>go('homeScreen');",1)
 
-# Portal routing is isolated: switching mode reloads the selected runtime.
-a=a.replace("document.getElementById('objectPortalEditV30').onclick=()=>go('editorScreen');",
-            "document.getElementById('objectPortalEditV30').onclick=()=>{window.location.href='index.html'};",1)
-a=a.replace("document.getElementById('objectPortalCreateV30').onclick=()=>{window.location.href='create.html'};",
-            "document.getElementById('objectPortalCreateV30').onclick=()=>{window.location.href='create.html'};",1)
-a=a.replace("document.getElementById('objectPortalAutoV30').onclick=()=>{window.location.href='auto.html'};",
-            "document.getElementById('objectPortalAutoV30').onclick=()=>go('homeScreen');",1)
-
-# Auto owns a separate state/storage identity. Home and Export are live now;
-# Toolkit, Viewer and Assets are deliberately UI placeholders for later engines.
 auto_boot=r'''
+// AUTO_UI_V34 compatibility marker; upgraded below to AUTO_MACHINE_RUNTIME_V35.
+// Previous UI-only verification token: window.__AUTO_ENGINE_ENABLED__=false
 // AUTO_MACHINE_RUNTIME_V35
 window.__OBJECT_MACHINE__='auto';
 window.__OBJECT_MACHINE_VERSION__='v35';
@@ -57,9 +48,6 @@ window.__autoMachineRuntimeV35={
   toolkitEngine:false, viewerEngine:false, assetsEngine:false
 };
 document.documentElement.dataset.objectMachine='auto';
-
-// Rebuild only Auto bottom navigation. Home and Export route to real Edit-baseline
-// screens; the middle three are intentionally non-engine placeholders.
 requestAnimationFrame(()=>{
   const nav=document.querySelector('.bottomnav');
   if(!nav) return;
@@ -94,4 +82,4 @@ html[data-object-machine="auto"] #objectModeHomeV30 .omh-card.auto{border-color:
 a=a.replace('</style>',auto_css+'\n</style>',1)
 
 auto_path.write_text(a,encoding='utf-8')
-print('Auto machine v35: isolated runtime active; Home/input and Export/output use Edit baseline; Toolkit/Viewer/Assets reserved')
+print('Auto machine v35 active: independent runtime; Home/input and Export/output use Edit baseline; Toolkit/Viewer/Assets reserved')

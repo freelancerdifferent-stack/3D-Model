@@ -35,7 +35,7 @@ js=r'''
 
  const undoV29=[],redoV29=[];
  const MAX_V29=100;
- let pendingV29=null,lastRootV29=null,suppressClickV29=0;
+ let pendingV29=null,lastRootV29=null;
 
  function snapV29(b){return b?{pos:b.position.clone(),quat:b.quaternion.clone(),scale:b.scale.clone()}:null}
  function applySnapV29(b,st){if(!b||!st)return;b.position.copy(st.pos);b.quaternion.copy(st.quat);b.scale.copy(st.scale)}
@@ -119,48 +119,70 @@ js=r'''
    return false;
  }
 
+ function depthV29(){return ' · undo '+undoV29.length+' redo '+redoV29.length}
+ // A stale entry is dropped one at a time; a throw puts the entry back so a single bad step can
+ // never wipe the rest of the history.
+ function stepV29(from,to,undoing,label){
+   while(from.length){
+     const e=from[from.length-1];
+     let ok=false;
+     try{ok=applyEntryV29(e,undoing)}
+     catch(err){refreshSkelHistUiV29();msg('Skeleton '+label+' gagal: '+(err&&err.message?err.message:err));return false}
+     from.pop();
+     if(ok){to.push(e);refreshSkelHistUiV29();msg('Skeleton '+label+' '+e.label+depthV29());return true}
+   }
+   refreshSkelHistUiV29();msg('Skeleton: tidak ada '+label+depthV29());return false;
+ }
  function skeletonUndoActionV29(){
    if(!skeletonLiveEditMode){msg('Undo ini khusus mode Skeleton');return false}
-   while(undoV29.length){
-     const e=undoV29.pop();
-     if(applyEntryV29(e,true)){redoV29.push(e);refreshSkelHistUiV29();msg('Skeleton Undo '+e.label);return true}
-   }
-   refreshSkelHistUiV29();msg('Skeleton: tidak ada Undo');return false;
+   return stepV29(undoV29,redoV29,true,'Undo');
  }
  function skeletonRedoActionV29(){
    if(!skeletonLiveEditMode){msg('Redo ini khusus mode Skeleton');return false}
-   while(redoV29.length){
-     const e=redoV29.pop();
-     if(applyEntryV29(e,false)){undoV29.push(e);refreshSkelHistUiV29();msg('Skeleton Redo '+e.label);return true}
-   }
-   refreshSkelHistUiV29();msg('Skeleton: tidak ada Redo');return false;
+   return stepV29(redoV29,undoV29,false,'Redo');
  }
 
- // Android WebView drops synthetic clicks on rail buttons during Skeleton mode, so own the
- // touch sequence and swallow the click it replays afterwards.
+ // One tap must run the action exactly once. On Android WebView a tap delivers touchend and
+ // then replays a synthetic click; running both made Redo fire twice, so the second call found
+ // an empty stack, greyed the button and overwrote the success toast. Once this button has seen
+ // a real touch, every click on it is a replay and is ignored outright.
  function wireSkelHistV29(btn,fn){
-   btn.addEventListener('touchstart',ev=>{ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation()},{capture:true,passive:false});
-   btn.addEventListener('touchend',ev=>{ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();suppressClickV29=performance.now()+700;fn()},{capture:true,passive:false});
-   btn.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();if(performance.now()<suppressClickV29)return;fn()},{capture:true});
+   let sawTouch=false,lastFire=0;
+   const run=()=>{
+     const now=performance.now();
+     if(now-lastFire<60)return;   // kills a duplicate delivery without throttling real taps
+     lastFire=now;fn();
+   };
+   const stop=ev=>{ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation()};
+   btn.addEventListener('touchstart',stop,{capture:true,passive:false});
+   btn.addEventListener('touchend',ev=>{stop(ev);sawTouch=true;run()},{capture:true,passive:false});
+   btn.addEventListener('touchcancel',ev=>{stop(ev);sawTouch=true},{capture:true,passive:false});
+   btn.addEventListener('click',ev=>{stop(ev);if(sawTouch)return;run()},{capture:true});
  }
  wireSkelHistV29(skelUndoBtn,skeletonUndoActionV29);
  wireSkelHistV29(skelRedoBtn,skeletonRedoActionV29);
 
  // One bone drag = one entry. These listeners are registered after the V20 gesture handlers,
  // so touchId and selectedBone are already settled when they run.
- canvas.addEventListener('touchstart',()=>{
+ canvas.addEventListener('touchstart',ev=>{
    if(!skeletonLiveEditMode||window.skeletonRigModeV26)return;
    if(touchId===null||!selectedBone){pendingV29=null;return}
-   pendingV29={bone:selectedBone,before:snapV29(selectedBone)};
+   const t=ev.touches&&ev.touches[0];
+   pendingV29={bone:selectedBone,before:snapV29(selectedBone),x:t?t.clientX:0,y:t?t.clientY:0};
  },{capture:true,passive:true});
- canvas.addEventListener('touchend',()=>{
+ canvas.addEventListener('touchend',ev=>{
    const pend=pendingV29;
    if(!pend)return;
+   // A stationary tap only picks a bone. Recording it would clear the redo stack for nothing,
+   // which is exactly what made Redo look broken, so require a real drag first.
+   const t=ev.changedTouches&&ev.changedTouches[0];
+   const moved=t?Math.hypot(t.clientX-pend.x,t.clientY-pend.y):0;
    // Commit after the V20/V21 touchend handler has written the final bone transform.
    setTimeout(()=>{
      if(pendingV29!==pend)return;
      if(touchId!==null)return;
      pendingV29=null;
+     if(moved<6)return;
      pushTransformV29(pend.bone,pend.before,snapV29(pend.bone));
    },0);
  },{capture:true,passive:true});

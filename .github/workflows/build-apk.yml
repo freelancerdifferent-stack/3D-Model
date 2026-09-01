@@ -29,6 +29,7 @@ jobs:
       - name: Apply editor pipeline
         run: |
           python3 tools/patch_fbx_assimp.py
+          python3 tools/patch_fbx_viewer_repair_v38.py
           python3 tools/patch_layers_v2.py
           python3 tools/patch_mesh_layers.py
           python3 tools/patch_part_drag.py
@@ -79,6 +80,12 @@ jobs:
       - name: Verify isolated Auto Viewer engine
         run: |
           test -f app/src/main/assets/auto.html
+          grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/index.html
+          grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/create.html
+          grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/auto.html
+          grep -q "prepareFBXForViewer(obj)" app/src/main/assets/index.html
+          grep -q "prepareFBXForViewer(obj)" app/src/main/assets/create.html
+          grep -q "prepareFBXForViewer(obj)" app/src/main/assets/auto.html
           grep -q "AUTO_MACHINE_RUNTIME_V35" app/src/main/assets/auto.html
           grep -q "AUTO_VIEWER_V37" app/src/main/assets/auto.html
           grep -q "viewerEngineVersion='v37-dedicated-auto'" app/src/main/assets/auto.html

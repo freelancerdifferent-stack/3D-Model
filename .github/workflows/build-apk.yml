@@ -99,6 +99,9 @@ jobs:
           grep -q "window.__OBJECT_MACHINE__='autorig';" app/src/main/assets/autorig.html
           grep -q "AUTORIG_MACHINE_V42" app/src/main/assets/autorig.html
           grep -q "AUTORIG_ENGINE_V43" app/src/main/assets/autorig.html
+          grep -q "AUTORIG_HANDOFF_SEND_V42" app/src/main/assets/auto.html
+          grep -q "AUTORIG_HANDOFF_RECEIVE_V43" app/src/main/assets/autorig.html
+          grep -q "arMachineBadgeV43" app/src/main/assets/autorig.html
           grep -q "MODE_STORAGE_SPLIT_V40" app/src/main/assets/autorig.html
           grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/autorig.html
           grep -q "window.location.href='autorig.html'" app/src/main/assets/auto.html

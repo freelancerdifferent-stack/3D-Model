@@ -11,6 +11,7 @@ if 'AUTORIG_MACHINE_V42' not in s:
 
 css=r'''
 /* AUTORIG_ENGINE_V43 */
+#arMachineBadgeV43{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:8;padding:6px 12px;border:1px solid #baff36;border-radius:999px;background:#12280cd9;color:#baff36;font-size:10px;font-weight:900;letter-spacing:.1em;pointer-events:none}
 #arRigStartV43{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);z-index:6;height:46px;padding:0 22px;border:0;border-radius:14px;background:#baff36;color:#0a1406;font-size:15px;font-weight:900;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px #0009}
 #arWizardV43{display:none;position:absolute;inset:0;z-index:40;pointer-events:none}
 #arWizardV43.on{display:block}
@@ -53,6 +54,11 @@ js=r'''
 (function(){
  const viewport=$('editorScreen')?.querySelector('.viewport');
  if(!viewport)return;
+
+ // Identitas mesin selalu terlihat, termasuk di tab Object yang tanpa topbar.
+ const arBadge=document.createElement('div');
+ arBadge.id='arMachineBadgeV43';arBadge.textContent='☠ AUTO RIG';
+ viewport.appendChild(arBadge);
 
  const startBtn=document.createElement('button');
  startBtn.id='arRigStartV43';startBtn.type='button';startBtn.innerHTML='⚡ Rig';
@@ -450,6 +456,33 @@ js=r'''
    const r=canvas.getBoundingClientRect();
    return {x:r.left+(v.x*0.5+0.5)*r.width,y:r.top+(-v.y*0.5+0.5)*r.height};
  };
+ // AUTORIG_HANDOFF_RECEIVE_V43 — ambil titipan model dari mesin Auto (slot sekali-pakai,
+ // dihapus begitu dibaca; kedaluwarsa 2 menit). Jalur data lewat storage, bukan runtime.
+ (async function(){
+   try{
+     const rec=await new Promise(res=>{
+       const rq=indexedDB.open('DF3D_MACHINE_HANDOFF',1);
+       rq.onupgradeneeded=()=>rq.result.createObjectStore('slot');
+       rq.onerror=()=>res(null);
+       rq.onsuccess=()=>{
+         const db=rq.result,tx=db.transaction('slot','readwrite'),st=tx.objectStore('slot');
+         const g=st.get('autorig');
+         g.onsuccess=()=>{const v=g.result||null;st.delete('autorig');tx.oncomplete=()=>{db.close();res(v)}};
+         g.onerror=()=>{db.close();res(null)};
+       };
+     });
+     if(!rec||!rec.buffer||(Date.now()-(rec.time||0))>120000)return;
+     const url=URL.createObjectURL(new Blob([rec.buffer],{type:'model/gltf-binary'}));
+     try{
+       const g=await new Promise((res,rej)=>new GLTFLoader().load(url,res,undefined,rej));
+       registerModel(g.scene,rec.name||'Model dari Auto',g.animations||[]);
+       if(typeof registerPrimaryLayer==='function'){try{registerPrimaryLayer()}catch(_){ }}
+       go('editorScreen');
+       msg('Model dibawa dari mesin Auto — tekan ⚡ Rig untuk mulai');
+     }finally{URL.revokeObjectURL(url)}
+   }catch(e){console.warn('Handoff receive gagal',e)}
+ })();
+
  window.__autoRigStateV43=state;   // dipakai verifikasi build/e2e, bukan jembatan antar mesin
 })();
 '''

@@ -54,8 +54,8 @@ theme=r'''
 html[data-object-machine="autorig"] body{background:radial-gradient(circle at 50% -10%,#0f2f1a 0,#0c1712 34%,#080f0b 72%)!important}
 html[data-object-machine="autorig"] .topbar{background:linear-gradient(180deg,#123a20,#0d1a12)!important;border-bottom-color:#2c6d42!important}
 html[data-object-machine="autorig"] .bottomnav{background:linear-gradient(180deg,#0e1a12,#0a120d)!important;border-top-color:#245c38!important}
-html[data-object-machine="autorig"] .nav.active,html[data-object-machine="autorig"] .nav:active{color:#39e75f!important}
-html[data-object-machine="autorig"] .tool.active,html[data-object-machine="autorig"] button.active{border-color:#39e75f!important;box-shadow:0 0 0 1px #39e75f55 inset!important}
+html[data-object-machine="autorig"] .nav.active,html[data-object-machine="autorig"] .nav:active{color:#baff36!important}
+html[data-object-machine="autorig"] .tool.active,html[data-object-machine="autorig"] button.active{border-color:#baff36!important;box-shadow:0 0 0 1px #baff3655 inset!important}
 html[data-object-machine="autorig"] #objectModeHomeV30{border-color:#2c6d42!important;background:linear-gradient(180deg,#10301c,#0d1a12)!important}
 '''
 if '</style>' not in r: raise SystemExit('style end missing for autorig theme')
@@ -65,6 +65,36 @@ autorig_path.write_text(r,encoding='utf-8')
 # Rewire the Auto machine's portal button from placeholder toast to real navigation.
 old_btn="b.onclick=()=>msg('Auto Rig — mesin khususnya akan dibangun berikutnya');"
 if old_btn not in a_html: raise SystemExit('Auto Rig placeholder handler missing in auto.html')
-a_html=a_html.replace(old_btn,"b.onclick=()=>{window.location.href='autorig.html'};",1)
+a_html=a_html.replace(old_btn,"b.onclick=()=>{sendModelToAutoRigV42()};",1)
+sender=r'''
+// AUTORIG_HANDOFF_SEND_V42 — titipan satu-arah lewat storage, bukan jembatan runtime:
+// model saat ini diekspor ke GLB, disimpan di slot IndexedDB sekali-pakai, lalu
+// dokumen berpindah. Mesin Auto mati total sebelum mesin Auto Rig hidup.
+async function sendModelToAutoRigV42(){
+  if(!root){window.location.href='autorig.html';return}
+  msg('Membawa model ke Auto Rig…');
+  try{
+    const glb=await new Promise((res,rej)=>{
+      try{new GLTFExporter().parse(root,r=>res(r),e=>rej(e),{binary:true,animations:(typeof clips!=='undefined'&&clips)?clips:[]})}
+      catch(e){rej(e)}
+    });
+    await new Promise((res,rej)=>{
+      const rq=indexedDB.open('DF3D_MACHINE_HANDOFF',1);
+      rq.onupgradeneeded=()=>rq.result.createObjectStore('slot');
+      rq.onerror=()=>rej(rq.error);
+      rq.onsuccess=()=>{
+        const db=rq.result,tx=db.transaction('slot','readwrite');
+        tx.objectStore('slot').put({buffer:glb,name:String($('fileLabel')?.textContent||'Model'),time:Date.now()},'autorig');
+        tx.oncomplete=()=>{db.close();res()};
+        tx.onerror=()=>rej(tx.error);
+      };
+    });
+  }catch(e){console.warn('Handoff Auto Rig gagal, pindah tanpa model',e)}
+  window.location.href='autorig.html';
+}
+'''
+ai=a_html.rfind('</script>')
+if ai<0: raise SystemExit('auto.html module end missing')
+a_html=a_html[:ai]+sender+'\n'+a_html[ai:]
 auto_path.write_text(a_html,encoding='utf-8')
 print('Auto Rig machine v42 generated; Auto button now navigates to autorig.html')

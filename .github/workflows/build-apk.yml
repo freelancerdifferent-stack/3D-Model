@@ -97,6 +97,8 @@ jobs:
         run: python3 tools/patch_object_ui_v9.py
       - name: Add Object Edit Create Auto portals
         run: python3 tools/patch_object_portals_v30.py
+      - name: Remove placeholder Recent Files from Home
+        run: python3 tools/patch_remove_recent_files_v31.py
       - name: Add dedicated Skeleton live edit mode
         run: python3 tools/patch_skeleton_live_edit_v20.py
       - name: Add Skeleton trackpad pinch zoom
@@ -135,6 +137,8 @@ jobs:
           grep -q "PROJECT_CHUNK_WRITER_V20" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
           grep -q "OBJECT_PORTALS_V30" app/src/main/assets/index.html
+          grep -q "REMOVE_RECENT_FILES_V31" app/src/main/assets/index.html
+          ! grep -q '<h2>Recent Files</h2>' app/src/main/assets/index.html
           grep -q "objectModeHomeV30" app/src/main/assets/index.html
           grep -q "objectPortalEditV30" app/src/main/assets/index.html
           grep -q "objectPortalCreateV30" app/src/main/assets/index.html

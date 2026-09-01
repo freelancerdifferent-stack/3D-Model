@@ -101,12 +101,8 @@ jobs:
         run: python3 tools/patch_skeleton_live_edit_v20.py
       - name: Add Skeleton trackpad pinch zoom
         run: python3 tools/patch_skeleton_trackpad_zoom_v27.py
-      - name: Add real Object undo redo history
-        run: python3 tools/patch_object_undo_redo_v10.py
       - name: Add touch scrub adjusters to Transform fields
         run: python3 tools/patch_transform_adjust_scrub_v11.py
-      - name: Fix Android Live Edit undo redo capture
-        run: python3 tools/patch_object_undo_redo_v12.py
       - name: Route Skeleton tools with Undo only
         run: python3 tools/patch_skeleton_tool_routes_v21.py
       - name: Style Skeleton bones and selected bone
@@ -145,9 +141,11 @@ jobs:
           grep -q "openSkeletonTransformV21" app/src/main/assets/index.html
           ! grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
           ! grep -q "skeletonRedoBtn" app/src/main/assets/index.html
-          grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
+          ! grep -q "objectUndoBtn" app/src/main/assets/index.html
+          ! grep -q "objectRedoBtn" app/src/main/assets/index.html
+          ! grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
+          ! grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html
           grep -q "TRANSFORM_ADJUST_SCRUB_V11" app/src/main/assets/index.html
-          grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html
           grep -q "EXPORT_ALL_V13" app/src/main/assets/index.html
           grep -q "MESH_TRANSFORM_PANEL_V14" app/src/main/assets/index.html
           grep -q "MESH_LAYER_MANAGE_V16" app/src/main/assets/index.html

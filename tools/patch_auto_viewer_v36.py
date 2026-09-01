@@ -9,15 +9,15 @@ if 'AUTO_VIEWER_V36' in s:
     print('Auto Viewer v36 already applied')
     raise SystemExit(0)
 
-# Viewer uses the existing proven Three.js/animation engine inside Auto, but gets
-# an Auto-specific presentation matching the supplied Viewer reference.
+# Auto Viewer keeps the proven editor viewport/Three.js engine intact. Only the
+# presentation is changed; do not alter the editor grid tracks because the base
+# renderer/canvas sizing depends on that layout.
 css=r'''
 /* AUTO_VIEWER_V36 */
-html[data-object-machine="auto"] #editorScreen .editor{grid-template-columns:1fr;grid-template-rows:1fr}
 html[data-object-machine="auto"] #editorScreen .toolrail{display:none!important}
 html[data-object-machine="auto"] #editorScreen .props{display:none!important}
-html[data-object-machine="auto"] #editorScreen .viewport{grid-column:1;grid-row:1;background:#17191b}
-html[data-object-machine="auto"] #editorScreen .overleft{top:14px;left:18px}
+html[data-object-machine="auto"] #editorScreen .viewport{background:#17191b;min-width:0;min-height:0}
+html[data-object-machine="auto"] #editorScreen .overleft{display:none!important}
 html[data-object-machine="auto"] #editorScreen .overright{top:14px;right:82px}
 html[data-object-machine="auto"] #editorScreen .viewtools{top:14px;right:10px;border-radius:12px;background:#101820e8}
 html[data-object-machine="auto"] #editorScreen .viewtools button{width:48px;height:46px}
@@ -31,11 +31,10 @@ html[data-object-machine="auto"] #autoViewerAnimBarV36 .anim-shell{display:flex;
 html[data-object-machine="auto"] #autoViewerAnimBarV36 select{width:100%;border:0;background:transparent;color:#f1f1f1;font-size:18px;outline:none}
 html[data-object-machine="auto"] #autoViewerAnimBarV36 select option{background:#14191f;color:#fff}
 html[data-object-machine="auto"] #autoViewerDownloadV36{width:54px;height:54px;border:0;border-radius:14px;background:#baff36;color:#071006;font-size:25px;font-weight:900;box-shadow:0 6px 18px #0005}
-html[data-object-machine="auto"] #autoViewerClipBarV36{position:absolute;z-index:7;left:24px;right:24px;bottom:28px;height:58px;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid #242a31;background:#151515dd;color:#f3f3f3;font-size:20px}
+html[data-object-machine="auto"] #autoViewerClipBarV36{position:absolute;z-index:7;left:18px;right:18px;bottom:28px;height:58px;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid #242a31;background:#151515dd;color:#f3f3f3;font-size:20px}
 html[data-object-machine="auto"] #autoViewerClipBarV36 .clip-arrow{font-size:28px;font-weight:900}
 html[data-object-machine="auto"] #autoViewerClipNameV36{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-object-machine="auto"] #autoViewerClipSourceV36{margin-left:auto;color:#73777d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
-html[data-object-machine="auto"] #editorScreen .overleft{display:none!important}
 @media(max-width:600px){html[data-object-machine="auto"] #autoViewerAnimBarV36{left:12px;max-width:calc(100% - 92px)}html[data-object-machine="auto"] #autoViewerAnimBarV36 .anim-shell{min-width:155px;max-width:250px;height:48px;border-radius:15px}html[data-object-machine="auto"] #autoViewerAnimBarV36 select{font-size:15px}html[data-object-machine="auto"] #autoViewerDownloadV36{width:48px;height:48px;font-size:21px}html[data-object-machine="auto"] #editorScreen .overright{right:66px;top:12px}html[data-object-machine="auto"] #editorScreen .timeline{left:12%;right:10%;bottom:92px;height:54px}html[data-object-machine="auto"] #autoViewerClipBarV36{left:12px;right:12px;bottom:18px;height:50px;font-size:16px}html[data-object-machine="auto"] #autoViewerClipNameV36{font-size:17px}}
 '''
 s=s.replace('</style>',css+'\n</style>',1)
@@ -50,8 +49,6 @@ requestAnimationFrame(()=>{
   const timeline=document.querySelector('#editorScreen .timeline');
   if(!viewport || !animSelect || !timeline) return;
 
-  // Move the real animation selector into the Viewer top control. Its existing
-  // onchange handler stays attached, so clip switching still uses the base engine.
   const oldWrap=animSelect.parentElement;
   const bar=document.createElement('div');
   bar.id='autoViewerAnimBarV36';
@@ -72,8 +69,7 @@ requestAnimationFrame(()=>{
     if(source) source.textContent=document.getElementById('fileLabel')?.textContent || 'No model loaded';
   };
   animSelect.addEventListener('change',syncClip);
-  const obs=new MutationObserver(syncClip);
-  obs.observe(animSelect,{childList:true,subtree:true});
+  new MutationObserver(syncClip).observe(animSelect,{childList:true,subtree:true});
   const fileLabel=document.getElementById('fileLabel');
   if(fileLabel) new MutationObserver(syncClip).observe(fileLabel,{childList:true,subtree:true});
   syncClip();
@@ -84,6 +80,15 @@ requestAnimationFrame(()=>{
     exportBtn.click();
   };
 
+  // Force a real Three.js viewport resize after Viewer becomes visible. The
+  // previous Auto CSS collapsed/repositioned the editor grid, leaving the
+  // renderer canvas with an invalid visible area even though the model loaded.
+  const refreshViewport=()=>{
+    requestAnimationFrame(()=>{
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(()=>window.dispatchEvent(new Event('resize')),120);
+    });
+  };
   const viewer=document.getElementById('autoViewerNavV35');
   const nav=document.querySelector('.bottomnav');
   if(viewer && nav){
@@ -91,17 +96,17 @@ requestAnimationFrame(()=>{
       nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
       viewer.classList.add('active');
       go('editorScreen');
-      setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
+      refreshViewport();
     };
   }
 
-  // Any successful import that lands on editorScreen is a Viewer transition in Auto.
   const viewerObserver=new MutationObserver(()=>{
     const editor=document.getElementById('editorScreen');
     if(editor?.classList.contains('active') && viewer && nav){
       nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
       viewer.classList.add('active');
       syncClip();
+      refreshViewport();
     }
   });
   viewerObserver.observe(document.getElementById('editorScreen'),{attributes:true,attributeFilter:['class']});
@@ -110,4 +115,4 @@ requestAnimationFrame(()=>{
 s=s.replace('</script>',js+'\n</script>',1)
 
 p.write_text(s,encoding='utf-8')
-print('Auto Viewer v36 active: viewport, animation selection/playback/scrub, mesh/view tools and viewer export control')
+print('Auto Viewer v36 active: base viewport layout preserved and renderer resized when Viewer opens')

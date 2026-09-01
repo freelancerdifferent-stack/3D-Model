@@ -119,8 +119,6 @@ jobs:
         run: python3 tools/patch_skeleton_redo_touch_v25.py
       - name: Add dedicated Skeleton Redo UI
         run: python3 tools/patch_skeleton_dedicated_redo_v28.py
-      - name: Replace mode Redo buttons with General Redo
-        run: python3 tools/patch_general_redo_v29.py
       - name: Add Export All and selective GLB options
         run: python3 tools/patch_export_all_v13.py
       - name: Restore selected Mesh Transform panel
@@ -148,8 +146,7 @@ jobs:
           grep -q "SKELETON_BONE_MANAGE_V24" app/src/main/assets/index.html
           grep -q "SKELETON_REDO_TOUCH_V25" app/src/main/assets/index.html
           grep -q "SKELETON_DEDICATED_REDO_V28" app/src/main/assets/index.html
-          grep -q "GENERAL_REDO_V29" app/src/main/assets/index.html
-          grep -q "generalRedoBtn" app/src/main/assets/index.html
+          grep -q "skeletonRedoBtn" app/src/main/assets/index.html
           grep -q "skeletonRemoveBoneBtn" app/src/main/assets/index.html
           grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
           grep -q "skeletonUndoActionV21" app/src/main/assets/index.html

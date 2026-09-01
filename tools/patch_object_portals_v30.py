@@ -40,6 +40,8 @@ css=r'''
 #objectPortalSheetV30 .op-badge{position:absolute;right:10px;top:8px;border:1px solid #7a6237;background:#322711;color:#ffd687;border-radius:20px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.08em}
 #objectPortalSheetV30 .auto .op-next{color:#756b59;font-size:18px}
 #objectPortalNavV30.active{color:#61a6ff;background:#141d28}
+body.object-portal-entry-v30 #objectPortalOverlayV30{padding-bottom:18px}
+body.object-portal-entry-v30 #objectPortalCloseV30{visibility:hidden;pointer-events:none}
 @media (min-width:700px){#objectPortalOverlayV30{align-items:center;padding-bottom:18px}}
 '''
 if '</style>' not in s:
@@ -59,7 +61,7 @@ objectPortalOverlayV30.innerHTML=`
     <div class="op-list">
       <button class="op-card edit" id="objectPortalEditV30" type="button">
         <span class="op-icon">✦</span>
-        <span class="op-copy"><b>Edit</b><small>Untuk model yang sudah memiliki bone / rig.</small></span>
+        <span class="op-copy"><b>Edit</b><small>Workspace lengkap yang sudah dibangun sejauh ini.</small></span>
         <span class="op-next">›</span>
       </button>
       <button class="op-card create" id="objectPortalCreateV30" type="button">
@@ -78,24 +80,37 @@ objectPortalOverlayV30.innerHTML=`
 document.body.appendChild(objectPortalOverlayV30);
 
 const objectPortalNavV30=document.getElementById('objectPortalNavV30');
-const openObjectPortalV30=()=>{
+let objectPortalEntryV30=true;
+const openObjectPortalV30=(entry=false)=>{
+  objectPortalEntryV30=!!entry;
+  document.body.classList.toggle('object-portal-entry-v30',objectPortalEntryV30);
   objectPortalOverlayV30.classList.add('open');
   objectPortalNavV30?.classList.add('active');
 };
 const closeObjectPortalV30=()=>{
+  objectPortalEntryV30=false;
+  document.body.classList.remove('object-portal-entry-v30');
   objectPortalOverlayV30.classList.remove('open');
   objectPortalNavV30?.classList.remove('active');
 };
-objectPortalNavV30?.addEventListener('click',openObjectPortalV30);
+objectPortalNavV30?.addEventListener('click',()=>openObjectPortalV30(false));
 document.getElementById('objectPortalCloseV30').onclick=closeObjectPortalV30;
-objectPortalOverlayV30.addEventListener('click',e=>{if(e.target===objectPortalOverlayV30)closeObjectPortalV30()});
+objectPortalOverlayV30.addEventListener('click',e=>{if(e.target===objectPortalOverlayV30&&!objectPortalEntryV30)closeObjectPortalV30()});
+
+// EDIT is the complete application/workspace already built in this repository.
+// Nothing is duplicated or stripped: all existing import, project, layers, mesh edit,
+// materials, Skeleton/Rig, export, offline runtime and Android bridge stay on the same
+// infrastructure and become reachable through this portal.
 document.getElementById('objectPortalEditV30').onclick=()=>{closeObjectPortalV30();go('editorScreen')};
 document.getElementById('objectPortalCreateV30').onclick=()=>{closeObjectPortalV30();msg('Create workspace dipilih — Skeleton → Rig → Animation')};
 document.getElementById('objectPortalAutoV30').onclick=()=>msg('Auto adalah fitur Exclusive — Coming Soon');
+
+// First app entry: portal is the gate before entering the existing application workspace.
+requestAnimationFrame(()=>openObjectPortalV30(true));
 '''
 if '</script>' not in s:
     raise SystemExit('Script closing tag missing')
 s=s.replace('</script>',js+'\n</script>',1)
 
 p.write_text(s,encoding='utf-8')
-print('Object portals v30 applied: Edit / Create / Auto')
+print('Object portals v30 applied: startup gate + complete existing workspace under Edit')

@@ -79,6 +79,8 @@ jobs:
           python3 tools/patch_create_machine_v32.py
           python3 tools/patch_auto_machine_v39.py
           python3 tools/patch_auto_rig_button_v41.py
+          python3 tools/patch_autorig_machine_v42.py
+          python3 tools/patch_autorig_engine_v43.py
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html
@@ -93,6 +95,19 @@ jobs:
           grep -q "autoRigPortalBtnV41" app/src/main/assets/auto.html
           ! grep -q "autoRigPortalBtnV41" app/src/main/assets/index.html
           ! grep -q "autoRigPortalBtnV41" app/src/main/assets/create.html
+          test -f app/src/main/assets/autorig.html
+          grep -q "window.__OBJECT_MACHINE__='autorig';" app/src/main/assets/autorig.html
+          grep -q "AUTORIG_MACHINE_V42" app/src/main/assets/autorig.html
+          grep -q "AUTORIG_ENGINE_V43" app/src/main/assets/autorig.html
+          grep -q "MODE_STORAGE_SPLIT_V40" app/src/main/assets/autorig.html
+          grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/autorig.html
+          grep -q "window.location.href='autorig.html'" app/src/main/assets/auto.html
+          ! grep -q "AUTORIG_ENGINE_V43" app/src/main/assets/index.html
+          ! grep -q "AUTORIG_ENGINE_V43" app/src/main/assets/create.html
+          ! grep -q "AUTORIG_ENGINE_V43" app/src/main/assets/auto.html
+          ! grep -q "autorig.html" app/src/main/assets/index.html
+          ! grep -q "autorig.html" app/src/main/assets/create.html
+          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/autorig.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

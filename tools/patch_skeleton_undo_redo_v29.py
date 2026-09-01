@@ -81,7 +81,7 @@ js=r'''
      if(!inModelV29(e.bone))return false;
      applySnapV29(e.bone,undoing?e.before:e.after);
      e.bone.updateMatrixWorld(true);
-     if(skeletonHelper)skeletonHelper.update();
+     if(typeof skeletonHelper?.update==='function')skeletonHelper.update();
      setSkeletonSelectedBoneV21(e.bone);
      try{updateSkeletonVisualV23()}catch(_){ }
      return true;

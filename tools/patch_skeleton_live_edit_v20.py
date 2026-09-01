@@ -142,7 +142,7 @@ js=r'''
      const qy=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),dx*.012);
      selectedBone.quaternion.copy(startQuat).multiply(qy).multiply(qx);
    }
-   selectedBone.updateMatrixWorld(true);if(skeletonHelper)skeletonHelper.update();
+   selectedBone.updateMatrixWorld(true);if(typeof skeletonHelper?.update==='function')skeletonHelper.update();
    e.preventDefault();e.stopPropagation();
  },{capture:true,passive:false});
  const endTouch=e=>{if(!skeletonLiveEditMode)return;touchId=null;startPos=startQuat=startScale=null};

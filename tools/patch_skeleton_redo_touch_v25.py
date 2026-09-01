@@ -15,10 +15,9 @@ else:
 
     js=r'''
  // SKELETON_REDO_TOUCH_V25
- // Android WebView can still let the Object history route overwrite the shared
- // button state between Skeleton updates. Own the physical touch route directly
- // while Skeleton mode is active, and keep the shared buttons natively enabled.
- let skeletonHistoryTouchHandledV25=false;
+ // Skeleton owns the physical Undo/Redo button route while Skeleton mode is active.
+ // Object/Mesh handlers are kept out of this route entirely.
+ let skeletonHistorySuppressClickUntilV25=0;
  function forceSkeletonHistoryButtonsV25(){
    if(!skeletonLiveEditMode)return;
    if(undoBtnV21){undoBtnV21.disabled=false;undoBtnV21.style.pointerEvents='auto'}
@@ -35,16 +34,23 @@ else:
    btn.addEventListener('touchend',ev=>{
      if(!skeletonLiveEditMode)return;
      ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
-     skeletonHistoryTouchHandledV25=true;
+     // Android WebView emits a synthetic click after touchend. Keep the guard
+     // alive long enough so the same Undo/Redo action cannot execute twice.
+     skeletonHistorySuppressClickUntilV25=performance.now()+900;
      action();
-     setTimeout(()=>{skeletonHistoryTouchHandledV25=false;forceSkeletonHistoryButtonsV25()},0);
+     forceSkeletonHistoryButtonsV25();
+   },{capture:true,passive:false});
+   btn.addEventListener('touchcancel',ev=>{
+     if(!skeletonLiveEditMode)return;
+     ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+     forceSkeletonHistoryButtonsV25();
    },{capture:true,passive:false});
  }
  bindSkeletonHistoryTouchV25(undoBtnV21,skeletonUndoActionV21);
  bindSkeletonHistoryTouchV25(redoBtnV21,skeletonRedoActionV21);
- // Prevent the synthetic click fired after touchend from executing Undo/Redo twice.
+ // Block only the synthetic click belonging to the just-finished Skeleton touch.
  document.addEventListener('click',ev=>{
-   if(!skeletonLiveEditMode||!skeletonHistoryTouchHandledV25)return;
+   if(!skeletonLiveEditMode||performance.now()>skeletonHistorySuppressClickUntilV25)return;
    const b=ev.target.closest('button');
    if(b===undoBtnV21||b===redoBtnV21){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation()}
  },true);

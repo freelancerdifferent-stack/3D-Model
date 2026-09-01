@@ -8,7 +8,7 @@ if 'SKELETON_LIVE_EDIT_V20' not in s:
     raise SystemExit('Skeleton Live Edit v20 must run first')
 
 # Skeleton Live Edit intentionally has Undo only. Object/Mesh Redo remains owned
-# by OBJECT_UNDO_REDO_V12 and is hidden while Skeleton mode is active.
+# by OBJECT_UNDO_REDO_V12 and is hidden only while Skeleton mode is active.
 s=s.replace('</style>',r'''
 /* SKELETON_TOOL_ROUTES_V21 — Skeleton Undo only, no Skeleton Redo */
 body.skeleton-live-v20 #editorScreen #objectRedoBtn{display:none!important}
@@ -47,7 +47,18 @@ route=r'''
  function applySkeletonFieldV21(id,value,before){if(!selectedBone)return;const n=Number(value);if(!Number.isFinite(n))return;if(id==='px')selectedBone.position.x=n;else if(id==='py')selectedBone.position.y=n;else if(id==='pz')selectedBone.position.z=n;else if(id==='rx')selectedBone.rotation.x=THREE.MathUtils.degToRad(n);else if(id==='ry')selectedBone.rotation.y=THREE.MathUtils.degToRad(n);else if(id==='rz')selectedBone.rotation.z=THREE.MathUtils.degToRad(n);else if(id==='sx')selectedBone.scale.x=n;else if(id==='sy')selectedBone.scale.y=n;else if(id==='sz')selectedBone.scale.z=n;selectedBone.updateMatrixWorld(true);if(skeletonHelper)skeletonHelper.update();pushSkeletonHistoryV21(before,boneStateV21(selectedBone));syncSkeletonTransformFieldsV21()}
  document.addEventListener('click',ev=>{if(!skeletonLiveEditMode)return;const b=ev.target.closest('button');if(!b)return;if(b===transformBtnV21){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openSkeletonTransformV21();return}if(b===undoBtnV21){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();skeletonUndoActionV21();return}if(b.classList.contains('tool')){const t=(b.textContent||'').toLowerCase();if(t.includes('move')||t.includes('rotate')||t.includes('scale')){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();skeletonTransformMode=t.includes('move')?'move':(t.includes('scale')?'scale':'rotate');rail.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));b.classList.add('active');const badge=$('liveEditBadge');if(badge)badge.textContent='LIVE EDIT Skeleton • '+skeletonTransformMode.toUpperCase();return}}},true);
  for(const id of boneFieldIdsV21){const el=$(id);if(!el)continue;const handler=ev=>{if(!skeletonLiveEditMode||!selectedBone)return;ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();const before=boneStateV21(selectedBone);applySkeletonFieldV21(id,el.value,before)};el.addEventListener('change',handler,true)}
- const oldSkeletonModeClickV21=skeletonModeBtn.onclick;skeletonModeBtn.onclick=()=>{oldSkeletonModeClickV21?.();if(skeletonLiveEditMode){syncSkeletonUndoButtonV21();syncSkeletonTransformFieldsV21()}else{if(undoBtnV21){undoBtnV21.disabled=false;undoBtnV21.removeAttribute('aria-disabled');undoBtnV21.style.opacity=''}}};
+ const oldSkeletonModeClickV21=skeletonModeBtn.onclick;
+ skeletonModeBtn.onclick=()=>{
+   oldSkeletonModeClickV21?.();
+   if(skeletonLiveEditMode){
+     syncSkeletonUndoButtonV21();syncSkeletonTransformFieldsV21();
+   }else{
+     if(undoBtnV21){undoBtnV21.disabled=false;undoBtnV21.removeAttribute('aria-disabled');undoBtnV21.style.opacity='';undoBtnV21.style.pointerEvents='auto'}
+     // Hand control back to the Object/Mesh history engine immediately. This
+     // restores both Undo and Redo availability/state after leaving Skeleton.
+     setTimeout(()=>{try{window.objectHistoryRefreshV12?.()}catch(_){}},0);
+   }
+ };
 
  // Android touch ownership for Skeleton Undo only. No Redo route exists here.
  let skeletonUndoSuppressClickUntilV21=0;
@@ -59,4 +70,4 @@ route=r'''
 '''
 s=s.replace(anchor,route+'\n'+anchor,1)
 p.write_text(s,encoding='utf-8')
-print('Skeleton tool routes v21 applied: Undo only, Skeleton Redo removed')
+print('Skeleton tool routes v21 applied: Undo only, Object history restored on exit')

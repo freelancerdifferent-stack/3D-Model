@@ -30,20 +30,11 @@ js=r'''
   const editor=document.getElementById('editorScreen');
   const rail=editor?.querySelector('.toolrail');
   if(!editor||!rail||document.getElementById('autoRigPortalV41')) return;
-
   const btn=document.createElement('button');
-  btn.type='button';
-  btn.id='autoRigPortalV41';
-  btn.className='object-extra-tool auto-rig-portal-v41';
-  btn.innerHTML='<b>☠</b>Auto Rig';
-
+  btn.type='button';btn.id='autoRigPortalV41';btn.className='object-extra-tool auto-rig-portal-v41';btn.innerHTML='<b>☠</b>Auto Rig';
   const select=rail.querySelector('.object-select-bottom') || rail.querySelector('.tool');
-  if(select) rail.insertBefore(btn,select);
-  else rail.appendChild(btn);
-
-  btn.addEventListener('click',()=>{
-    if(typeof toast==='function') toast('Auto Rig machine belum aktif pada build ini.');
-  });
+  if(select) rail.insertBefore(btn,select);else rail.appendChild(btn);
+  btn.addEventListener('click',()=>{if(typeof toast==='function') toast('Auto Rig machine belum aktif pada build ini.')});
 })();
 '''
 i=s.rfind('</script>')
@@ -60,6 +51,7 @@ for script,label in [
  ('tools/patch_auto_rig_centerline_fix_v45.py','Auto Rig centerline fix v45'),
  ('tools/patch_auto_rig_reference_skeleton_v46.py','Auto Rig reference skeleton v46'),
  ('tools/patch_auto_vertical_guide_v47.py','Auto vertical guide v47'),
+ ('tools/patch_auto_rig_camera_hide_v48.py','Auto Rig camera/hide v48'),
 ]:
     q=Path(script)
     if not q.exists(): raise SystemExit(label+' patch missing')

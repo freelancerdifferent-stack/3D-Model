@@ -76,30 +76,29 @@ jobs:
           python3 tools/patch_adaptive_floor_grid_v17.py
           python3 tools/patch_offline_runtime.py
           python3 tools/patch_create_machine_v32.py
-          python3 tools/patch_auto_ui_v34.py
-      - name: Verify isolated Auto Viewer engine
+      - name: Verify machines and Auto removal
         run: |
-          test -f app/src/main/assets/auto.html
+          test -f app/src/main/assets/index.html
+          test -f app/src/main/assets/create.html
+          ! test -f app/src/main/assets/auto.html
+          grep -q "OBJECT_PORTALS_V30" app/src/main/assets/index.html
+          grep -q "objectPortalEditV30" app/src/main/assets/index.html
+          grep -q "objectPortalCreateV30" app/src/main/assets/index.html
+          ! grep -q "objectPortalAutoV30" app/src/main/assets/index.html
+          ! grep -q "objectPortalAutoV30" app/src/main/assets/create.html
+          ! grep -q "AUTO_MACHINE_RUNTIME_V35" app/src/main/assets/index.html
+          ! grep -q "AUTO_VIEWER_V37" app/src/main/assets/index.html
+          ! grep -q "autoViewerCanvasV37" app/src/main/assets/index.html
+          ! grep -q "AUTO_MACHINE_RUNTIME_V35" app/src/main/assets/create.html
+          grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
+          grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/index.html
           grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/create.html
-          grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/auto.html
           grep -q "prepareFBXForViewer(obj)" app/src/main/assets/index.html
           grep -q "prepareFBXForViewer(obj)" app/src/main/assets/create.html
-          grep -q "prepareFBXForViewer(obj)" app/src/main/assets/auto.html
-          grep -q "AUTO_MACHINE_RUNTIME_V35" app/src/main/assets/auto.html
-          grep -q "AUTO_VIEWER_V37" app/src/main/assets/auto.html
-          grep -q "viewerEngineVersion='v37-dedicated-auto'" app/src/main/assets/auto.html
-          grep -q "autoViewerCanvasV37" app/src/main/assets/auto.html
-          grep -q "const autoRenderer=new THREE.WebGLRenderer" app/src/main/assets/auto.html
-          grep -q "const autoScene=new THREE.Scene" app/src/main/assets/auto.html
-          grep -q "const autoCamera=new THREE.PerspectiveCamera" app/src/main/assets/auto.html
-          grep -q "new OrbitControls(autoCamera,c)" app/src/main/assets/auto.html
-          grep -q "loadFbxWithAssimp(f)" app/src/main/assets/auto.html
-          grep -q "sharesRenderer:false" app/src/main/assets/auto.html
-          grep -q "sharesScene:false" app/src/main/assets/auto.html
-          grep -q "crossModeBridge:false" app/src/main/assets/auto.html
-          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/auto.html
-          ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/auto.html
+          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/index.html
+          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/create.html
+          ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/index.html
           test -f app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.9' }

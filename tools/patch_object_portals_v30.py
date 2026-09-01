@@ -32,12 +32,6 @@ portal_html=r'''
             <span class="omh-copy"><b>Create</b><small>Mulai dari mesh polos: Skeleton → Rig → Animation.</small></span>
             <span class="omh-next">›</span>
           </button>
-          <button class="omh-card auto" id="objectPortalAutoV30" type="button" aria-disabled="true">
-            <span class="omh-badge">EXCLUSIVE · COMING SOON</span>
-            <span class="omh-icon">⚡</span>
-            <span class="omh-copy"><b>Auto</b><small>Rigging dan animation otomatis.</small></span>
-            <span class="omh-next">🔒</span>
-          </button>
         </div>
       </section>
 '''
@@ -54,15 +48,11 @@ css=r'''
 #objectModeHomeV30 .omh-card:active{transform:scale(.99)}
 #objectModeHomeV30 .omh-card.edit{border-color:#315d86;background:linear-gradient(135deg,#162538,#15202b)}
 #objectModeHomeV30 .omh-card.create{border-color:#27694f;background:linear-gradient(135deg,#122d25,#15221f)}
-#objectModeHomeV30 .omh-card.auto{opacity:.72;border-color:#604c28;background:linear-gradient(135deg,#2a2214,#191b1d)}
 #objectModeHomeV30 .omh-icon{width:50px;height:50px;border-radius:13px;display:grid;place-items:center;border:1px solid #36506a;background:#101820;font-size:25px}
 #objectModeHomeV30 .create .omh-icon{border-color:#34775e;color:#73e2b0}
-#objectModeHomeV30 .auto .omh-icon{border-color:#745d31;color:#f2c66f}
 #objectModeHomeV30 .omh-copy b{display:block;font-size:15px;margin-bottom:4px}
 #objectModeHomeV30 .omh-copy small{display:block;color:#9baaba;font-size:11px;line-height:1.4}
 #objectModeHomeV30 .omh-next{font-size:22px;color:#78aee7;text-align:right}
-#objectModeHomeV30 .omh-badge{position:absolute;right:10px;top:8px;border:1px solid #7a6237;background:#322711;color:#ffd687;border-radius:20px;padding:3px 7px;font-size:8px;font-weight:800;letter-spacing:.08em}
-#objectModeHomeV30 .auto .omh-next{color:#756b59;font-size:18px}
 '''
 if '</style>' not in s:
     raise SystemExit('Style closing tag missing')
@@ -73,14 +63,14 @@ js=r'''
 // Edit is the default application mode and keeps the complete existing editor infrastructure.
 document.getElementById('objectPortalEditV30').onclick=()=>go('editorScreen');
 document.getElementById('objectPortalCreateV30').onclick=()=>msg('Create workspace dipilih — Skeleton → Rig → Animation');
-document.getElementById('objectPortalAutoV30').onclick=()=>msg('Auto adalah fitur Exclusive — Coming Soon');
 
 // App startup goes directly to the existing Edit workspace.
 requestAnimationFrame(()=>go('editorScreen'));
 '''
-if '</script>' not in s:
+idx=s.rfind('</script>')
+if idx<0:
     raise SystemExit('Script closing tag missing')
-s=s.replace('</script>',js+'\n</script>',1)
+s=s[:idx]+js+'\n'+s[idx:]
 
 p.write_text(s,encoding='utf-8')
 print('Object portals v30 applied: original Object restored, chooser on Home, Edit default')

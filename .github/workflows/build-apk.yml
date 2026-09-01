@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "GPT2" ]
   workflow_dispatch:
 
 permissions:
@@ -107,7 +107,7 @@ jobs:
         run: python3 tools/patch_skeleton_visual_v23.py
       - name: Enable Add Duplicate Remove Bone
         run: python3 tools/patch_skeleton_bone_manage_v24.py
-      - name: Enable Skeleton Rig
+      - name: Enable Skeleton Rig workspace
         run: python3 tools/patch_skeleton_rig_v26.py
       - name: Add Skeleton undo redo
         run: python3 tools/patch_skeleton_undo_redo_v29.py
@@ -138,6 +138,9 @@ jobs:
           grep -q "SKELETON_VISUAL_V23" app/src/main/assets/index.html
           grep -q "SKELETON_BONE_MANAGE_V24" app/src/main/assets/index.html
           grep -q "SKELETON_RIG_V26" app/src/main/assets/index.html
+          grep -q "RIG_WORKSPACE_V26" app/src/main/assets/index.html
+          grep -q "rigWorkspaceV26" app/src/main/assets/index.html
+          grep -q "rigBackV26" app/src/main/assets/index.html
           grep -q "skeletonRemoveBoneBtn" app/src/main/assets/index.html
           ! grep -q "skeletonUndoActionV21" app/src/main/assets/index.html
           grep -q "openSkeletonTransformV21" app/src/main/assets/index.html

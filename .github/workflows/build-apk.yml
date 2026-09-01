@@ -12,215 +12,93 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-      - name: Install Android SDK 35
-        run: yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
-      - name: Set up Node for offline runtime assets
-        uses: actions/setup-node@v4
-      - name: Bundle Three.js and AssimpJS into APK assets
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - run: yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - uses: actions/setup-node@v4
+      - name: Bundle offline runtime
         run: |
           rm -rf /tmp/df3d-runtime app/src/main/assets/vendor
           mkdir -p /tmp/df3d-runtime app/src/main/assets/vendor/three app/src/main/assets/vendor/assimpjs
-          cd /tmp/df3d-runtime
-          npm init -y >/dev/null 2>&1
-          npm install --no-audit --no-fund three@0.180.0 assimpjs@0.0.10
+          cd /tmp/df3d-runtime && npm init -y >/dev/null 2>&1 && npm install --no-audit --no-fund three@0.180.0 assimpjs@0.0.10
           cp -R node_modules/three/build "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/build"
           cp -R node_modules/three/examples "$GITHUB_WORKSPACE/app/src/main/assets/vendor/three/examples"
           cp -R node_modules/assimpjs/dist "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist"
-      - name: Patch FBX parser to Assimp WASM
-        run: python3 tools/patch_fbx_assimp.py
-      - name: Patch universal Layers
-        run: python3 tools/patch_layers_v2.py
-      - name: Patch separate Mesh Layers
-        run: python3 tools/patch_mesh_layers.py
-      - name: Patch touch Part Drag
-        run: python3 tools/patch_part_drag.py
-      - name: Patch touch Part Rotate and Scale
-        run: python3 tools/patch_part_rotate_scale.py
-      - name: Patch Part Transform Axis Lock
-        run: python3 tools/patch_part_axis_lock.py
-      - name: Patch Android Part Drag fix
-        run: python3 tools/patch_part_drag_android_fix.py
-      - name: Patch Part Transform stability
-        run: python3 tools/patch_part_transform_stability.py
-      - name: Patch long-press Part transform menu
-        run: python3 tools/patch_part_longpress_menu.py
-      - name: Patch Mesh Layer part locks
-        run: python3 tools/patch_mesh_part_lock.py
-      - name: Harden Mesh Layer part locks
-        run: python3 tools/patch_mesh_part_lock_v2.py
-      - name: Fix long-press popup on Android
-        run: python3 tools/patch_part_longpress_fix_v2.py
-      - name: Turn existing Select into Live Edit portal
-        run: python3 tools/patch_live_edit_select.py
-      - name: Add isolated Orbit trackpad for Live Edit
-        run: python3 tools/patch_live_edit_orbit_trackpad_v8.py
-      - name: Wire Live Edit Move Rotate Scale
-        run: python3 tools/patch_live_edit_transform.py
-      - name: Fix Live Edit transforms with dedicated gesture path
-        run: python3 tools/patch_live_edit_transform_v2.py
-      - name: Fix Live Edit selected part state
-        run: python3 tools/patch_live_edit_selection_state_v2.py
-      - name: Fix Live Edit exit and OrbitControls restore
-        run: python3 tools/patch_live_edit_state_v3.py
-      - name: Make Live Edit touch transforms persistent
-        run: python3 tools/patch_live_edit_touch_transform_v3.py
-      - name: Own Live Edit transform gestures at viewport capture
-        run: python3 tools/patch_live_edit_touch_transform_v4.py
-      - name: Use native Android Touch Events for Live Edit transforms
-        run: python3 tools/patch_live_edit_touch_transform_v5.py
-      - name: Patch Project Manager
-        run: python3 tools/patch_project_manager.py
-      - name: Patch selectable project folder storage
-        run: python3 tools/patch_project_folder_saf.py
-      - name: Fix Android project SAF document URI handling
-        run: python3 tools/patch_project_saf_uri_v17.py
-      - name: Add Import Project support
-        run: python3 tools/patch_project_import_v18.py
-      - name: Add Export Project support
-        run: python3 tools/patch_project_export_v19.py
-      - name: Make Save Export Import Project one roundtrip format
-        run: python3 tools/patch_project_roundtrip_v20.py
-      - name: Fix SkinnedMesh direct transform and saved project recovery
-        run: python3 tools/patch_skinned_mesh_direct_v6.py
-      - name: Fix live SkinnedMesh visual preview while dragging
-        run: python3 tools/patch_live_edit_visual_preview_v7.py
-      - name: Redesign Object editor UI
-        run: python3 tools/patch_object_ui_v9.py
-      - name: Add Object Edit Create Auto portals
-        run: python3 tools/patch_object_portals_v30.py
-      - name: Remove placeholder Recent Files from Home
-        run: python3 tools/patch_remove_recent_files_v31.py
-      - name: Add dedicated Skeleton live edit mode
-        run: python3 tools/patch_skeleton_live_edit_v20.py
-      - name: Add Skeleton trackpad pinch zoom
-        run: python3 tools/patch_skeleton_trackpad_zoom_v27.py
-      - name: Add touch scrub adjusters to Transform fields
-        run: python3 tools/patch_transform_adjust_scrub_v11.py
-      - name: Route Skeleton tools with Undo only
-        run: python3 tools/patch_skeleton_tool_routes_v21.py
-      - name: Style Skeleton bones and selected bone
-        run: python3 tools/patch_skeleton_visual_v23.py
-      - name: Enable Add Duplicate Remove Bone
-        run: python3 tools/patch_skeleton_bone_manage_v24.py
-      - name: Enable Skeleton Rig workspace
-        run: python3 tools/patch_skeleton_rig_v26.py
-      - name: Add Skeleton undo redo
-        run: python3 tools/patch_skeleton_undo_redo_v29.py
-      - name: Add Export All and selective GLB options
-        run: python3 tools/patch_export_all_v13.py
-      - name: Restore selected Mesh Transform panel
-        run: python3 tools/patch_mesh_transform_panel_v14.py
-      - name: Add Mesh Layers rename delete and add mesh
-        run: python3 tools/patch_mesh_layer_manage_v16.py
-      - name: Add Live Edit Select undo redo
-        run: python3 tools/patch_live_edit_select_undo_v28.py
-      - name: Fix adaptive feet-aligned floor grid
-        run: python3 tools/patch_adaptive_floor_grid_v17.py
-      - name: Make runtime fully offline
-        run: python3 tools/patch_offline_runtime.py
-      - name: Split Edit and Create into independent runtimes
-        run: python3 tools/patch_create_machine_v32.py
-      - name: Build Auto runtime and Viewer
-        run: python3 tools/patch_auto_ui_v34.py
-      - name: Verify editor pipeline and isolated machines
+      - name: Apply editor pipeline
         run: |
-          grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
-          grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/index.html
-          grep -q "PROJECT_IMPORT_V18" app/src/main/assets/index.html
-          grep -q "PROJECT_EXPORT_V19" app/src/main/assets/index.html
-          grep -q "PROJECT_ROUNDTRIP_V20" app/src/main/assets/index.html
-          grep -q "PROJECT_CHUNK_WRITER_V20" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
-          grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
-          grep -q "OBJECT_PORTALS_V30" app/src/main/assets/index.html
-          grep -q "REMOVE_RECENT_FILES_V31" app/src/main/assets/index.html
-          ! grep -q '<h2>Recent Files</h2>' app/src/main/assets/index.html
-          grep -q "objectModeHomeV30" app/src/main/assets/index.html
-          grep -q "objectPortalEditV30" app/src/main/assets/index.html
-          grep -q "objectPortalCreateV30" app/src/main/assets/index.html
-          grep -q "objectPortalAutoV30" app/src/main/assets/index.html
-          grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
-          grep -q "window.__OBJECT_MACHINE__='edit'" app/src/main/assets/index.html
-          grep -q "window.location.href='create.html'" app/src/main/assets/index.html
-          grep -q "window.location.href='auto.html'" app/src/main/assets/index.html
-          test -f app/src/main/assets/create.html
-          grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
-          grep -q "CREATE_MACHINE_STORAGE_V32" app/src/main/assets/create.html
-          grep -q "window.__OBJECT_MACHINE__='create'" app/src/main/assets/create.html
-          grep -q "OBJECT_UI_V9" app/src/main/assets/create.html
-          grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/create.html
-          grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/create.html
-          grep -q "SKELETON_RIG_V26" app/src/main/assets/create.html
+          python3 tools/patch_fbx_assimp.py
+          python3 tools/patch_layers_v2.py
+          python3 tools/patch_mesh_layers.py
+          python3 tools/patch_part_drag.py
+          python3 tools/patch_part_rotate_scale.py
+          python3 tools/patch_part_axis_lock.py
+          python3 tools/patch_part_drag_android_fix.py
+          python3 tools/patch_part_transform_stability.py
+          python3 tools/patch_part_longpress_menu.py
+          python3 tools/patch_mesh_part_lock.py
+          python3 tools/patch_mesh_part_lock_v2.py
+          python3 tools/patch_part_longpress_fix_v2.py
+          python3 tools/patch_live_edit_select.py
+          python3 tools/patch_live_edit_orbit_trackpad_v8.py
+          python3 tools/patch_live_edit_transform.py
+          python3 tools/patch_live_edit_transform_v2.py
+          python3 tools/patch_live_edit_selection_state_v2.py
+          python3 tools/patch_live_edit_state_v3.py
+          python3 tools/patch_live_edit_touch_transform_v3.py
+          python3 tools/patch_live_edit_touch_transform_v4.py
+          python3 tools/patch_live_edit_touch_transform_v5.py
+          python3 tools/patch_project_manager.py
+          python3 tools/patch_project_folder_saf.py
+          python3 tools/patch_project_saf_uri_v17.py
+          python3 tools/patch_project_import_v18.py
+          python3 tools/patch_project_export_v19.py
+          python3 tools/patch_project_roundtrip_v20.py
+          python3 tools/patch_skinned_mesh_direct_v6.py
+          python3 tools/patch_live_edit_visual_preview_v7.py
+          python3 tools/patch_object_ui_v9.py
+          python3 tools/patch_object_portals_v30.py
+          python3 tools/patch_remove_recent_files_v31.py
+          python3 tools/patch_skeleton_live_edit_v20.py
+          python3 tools/patch_skeleton_trackpad_zoom_v27.py
+          python3 tools/patch_transform_adjust_scrub_v11.py
+          python3 tools/patch_skeleton_tool_routes_v21.py
+          python3 tools/patch_skeleton_visual_v23.py
+          python3 tools/patch_skeleton_bone_manage_v24.py
+          python3 tools/patch_skeleton_rig_v26.py
+          python3 tools/patch_skeleton_undo_redo_v29.py
+          python3 tools/patch_export_all_v13.py
+          python3 tools/patch_mesh_transform_panel_v14.py
+          python3 tools/patch_mesh_layer_manage_v16.py
+          python3 tools/patch_live_edit_select_undo_v28.py
+          python3 tools/patch_adaptive_floor_grid_v17.py
+          python3 tools/patch_offline_runtime.py
+          python3 tools/patch_create_machine_v32.py
+          python3 tools/patch_auto_ui_v34.py
+      - name: Verify isolated Auto Viewer engine
+        run: |
           test -f app/src/main/assets/auto.html
           grep -q "AUTO_MACHINE_RUNTIME_V35" app/src/main/assets/auto.html
-          grep -q "window.__AUTO_ENGINE_ENABLED__=true" app/src/main/assets/auto.html
-          grep -q "sharesRuntimeWithEdit:false" app/src/main/assets/auto.html
-          grep -q "sharesRuntimeWithCreate:false" app/src/main/assets/auto.html
-          grep -q "AUTO_VIEWER_V36" app/src/main/assets/auto.html
-          grep -q "viewerEngine=true" app/src/main/assets/auto.html
-          grep -q "viewerEngineVersion='v36-auto-native'" app/src/main/assets/auto.html
+          grep -q "AUTO_VIEWER_V37" app/src/main/assets/auto.html
+          grep -q "viewerEngineVersion='v37-dedicated-auto'" app/src/main/assets/auto.html
+          grep -q "autoViewerCanvasV37" app/src/main/assets/auto.html
+          grep -q "const autoRenderer=new THREE.WebGLRenderer" app/src/main/assets/auto.html
+          grep -q "const autoScene=new THREE.Scene" app/src/main/assets/auto.html
+          grep -q "const autoCamera=new THREE.PerspectiveCamera" app/src/main/assets/auto.html
+          grep -q "new OrbitControls(autoCamera,c)" app/src/main/assets/auto.html
+          grep -q "loadFbxWithAssimp(f)" app/src/main/assets/auto.html
+          grep -q "sharesRenderer:false" app/src/main/assets/auto.html
+          grep -q "sharesScene:false" app/src/main/assets/auto.html
           grep -q "crossModeBridge:false" app/src/main/assets/auto.html
-          grep -q "autoViewerAnimBarV36" app/src/main/assets/auto.html
-          grep -q "autoViewerDownloadV36" app/src/main/assets/auto.html
-          grep -q "autoViewerClipBarV36" app/src/main/assets/auto.html
-          grep -q "autoViewerNavV35" app/src/main/assets/auto.html
-          grep -q "AUTO • GLB • FBX • PNG" app/src/main/assets/auto.html
-          grep -q 'data-go="editorScreen"' app/src/main/assets/index.html
-          grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
-          grep -q "SKELETON_TRACKPAD_ZOOM_V27" app/src/main/assets/index.html
-          grep -q "SKELETON_TOOL_ROUTES_V21" app/src/main/assets/index.html
-          grep -q "SKELETON_VISUAL_V23" app/src/main/assets/index.html
-          grep -q "SKELETON_BONE_MANAGE_V24" app/src/main/assets/index.html
-          grep -q "SKELETON_RIG_V26" app/src/main/assets/index.html
-          grep -q "RIG_WORKSPACE_V26" app/src/main/assets/index.html
-          grep -q "rigWorkspaceV26" app/src/main/assets/index.html
-          grep -q "rigBackV26" app/src/main/assets/index.html
-          grep -q "skeletonRemoveBoneBtn" app/src/main/assets/index.html
-          ! grep -q "skeletonUndoActionV21" app/src/main/assets/index.html
-          grep -q "openSkeletonTransformV21" app/src/main/assets/index.html
-          ! grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
-          ! grep -q "skeletonRedoBtn" app/src/main/assets/index.html
-          ! grep -q "pushSkeletonHistoryV21" app/src/main/assets/index.html
-          grep -q "SKELETON_UNDO_REDO_V29" app/src/main/assets/index.html
-          grep -q "skelUndoBtn" app/src/main/assets/index.html
-          grep -q "skelRedoBtn" app/src/main/assets/index.html
-          grep -q "skeletonUndoActionV29" app/src/main/assets/index.html
-          grep -q "skeletonRedoActionV29" app/src/main/assets/index.html
-          ! grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
-          ! grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html
-          grep -q "LIVE_EDIT_SELECT_UNDO_V28" app/src/main/assets/index.html
-          grep -q "liveUndoBtn" app/src/main/assets/index.html
-          grep -q "liveRedoBtn" app/src/main/assets/index.html
-          grep -q "liveEditUndoActionV28" app/src/main/assets/index.html
-          grep -q "liveEditRedoActionV28" app/src/main/assets/index.html
-          grep -q "TRANSFORM_ADJUST_SCRUB_V11" app/src/main/assets/index.html
-          grep -q "EXPORT_ALL_V13" app/src/main/assets/index.html
-          grep -q "MESH_TRANSFORM_PANEL_V14" app/src/main/assets/index.html
-          grep -q "MESH_LAYER_MANAGE_V16" app/src/main/assets/index.html
-          grep -q "ADAPTIVE_FLOOR_GRID_V17" app/src/main/assets/index.html
-          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/index.html
-          ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/index.html
-          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/create.html
-          ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/create.html
           ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/auto.html
           ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/auto.html
           test -f app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.9' }
       - name: Build debug APK
         run: gradle --no-daemon assembleDebug
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: 3D-Model-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk

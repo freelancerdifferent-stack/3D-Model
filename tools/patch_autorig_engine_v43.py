@@ -74,6 +74,7 @@ js=r'''
        <div class="bad"><b>🙁 Bad Example</b><br>Anggota badan saling menempel atau tertutup, tubuh tidak lengkap.</div>
      </div>
      <div class="ar-note">Hasil terbaik: karakter humanoid menghadap ke depan.</div>
+     <div class="ar-warn" id="arHadRigWarnV43" style="display:none">⚠ Model ini sudah punya skeleton. Rig lama akan DIGANTI dengan hasil Auto Rig — tombol "Batalkan Rig" mengembalikannya.</div>
      <div class="ar-actions"><button class="ar-btn primary" id="arNext2V43">Next ›</button></div>
    </div>
    <div class="ar-step" id="arStep3V43">
@@ -168,7 +169,8 @@ js=r'''
  }
  function openWiz(){
    if(!root){msg('Import model dulu sebelum Auto Rig');return}
-   if(rootHasBones()){msg('Model ini sudah punya skeleton — Auto Rig untuk model polos');return}
+   state.hadRig=rootHasBones();
+   const w=$('arHadRigWarnV43');if(w)w.style.display=state.hadRig?'block':'none';
    wiz.classList.add('on');state.open=true;show(2);
  }
  function closeWiz(){
@@ -279,6 +281,40 @@ js=r'''
  },{capture:true});
 
  // ---- Step 5: build skeleton + auto weights ----
+ // Model yang sudah ter-rig: lepaskan skeleton & skin lamanya secara UTUH-PULIH —
+ // objek lama disimpan apa adanya supaya "Batalkan Rig" mengembalikannya persis.
+ function stripExistingRig(){
+   const saved={meshes:[],boneRoots:[]};
+   const roots=[];
+   root.traverse(o=>{if(o.isBone&&(!o.parent||!o.parent.isBone))roots.push(o)});
+   for(const b of roots){saved.boneRoots.push({bone:b,parent:b.parent});if(b.parent)b.parent.remove(b)}
+   for(let i=0;i<meshList.length;i++){
+     const m=meshList[i];
+     if(!m||!m.isSkinnedMesh)continue;
+     const g=m.geometry.clone();
+     g.deleteAttribute('skinIndex');g.deleteAttribute('skinWeight');
+     const nm=new THREE.Mesh(g,m.material);
+     nm.name=m.name;nm.castShadow=m.castShadow;nm.receiveShadow=m.receiveShadow;
+     nm.position.copy(m.position);nm.quaternion.copy(m.quaternion);nm.scale.copy(m.scale);
+     m.parent.add(nm);
+     saved.meshes.push({old:m,parent:m.parent,replacement:nm,index:i});
+     m.parent.remove(m);
+     meshList[i]=nm;
+   }
+   root.updateMatrixWorld(true);
+   return saved;
+ }
+ function restoreStrippedRig(){
+   const sv=state.stripped;if(!sv)return;
+   for(const e of sv.meshes){
+     if(e.replacement.parent)e.replacement.parent.remove(e.replacement);
+     e.parent.add(e.old);
+     if(e.index>=0)meshList[e.index]=e.old;
+   }
+   for(const r of sv.boneRoots){if(r.parent)r.parent.add(r.bone)}
+   root.updateMatrixWorld(true);
+   state.stripped=null;
+ }
  function lerpV(a,b,t){return new THREE.Vector3().lerpVectors(a,b,t)}
  function buildBoneWorldMap(){
    const P=state.points;
@@ -345,6 +381,7 @@ js=r'''
  }
  async function runAutoRig(){
    show(5);
+   if(state.hadRig&&!state.stripped)state.stripped=stripExistingRig();
    const k=parseFloat($('arSmooth').value)||4;
    const sk=buildSkeleton();
    const segs=boneSegments(sk);
@@ -419,6 +456,7 @@ js=r'''
    if(r.sk.bones.Hips.parent)r.sk.bones.Hips.parent.remove(r.sk.bones.Hips);
    if(state.helper){scene.remove(state.helper);state.helper=null}
    state.rigged=null;
+   restoreStrippedRig();
    msg('Rig dibatalkan — model kembali seperti semula');
    show(4);renderMarkerList();
    for(const slot of Object.keys(state.points))addMarkerMesh(slot,state.points[slot]);
@@ -448,6 +486,18 @@ js=r'''
  $('arWiggleV43').onclick=wiggle;
  $('arDoneV43').onclick=()=>{closeWiz();msg('Model ter-rig — lanjut Export atau rapikan di mode Skeleton')};
 
+ // bbox dunia model & proyeksi titik dunia (dipakai hint marker & verifikasi)
+ state.modelBox=()=>{
+   if(!root)return null;
+   root.updateMatrixWorld(true);
+   const b=new THREE.Box3().setFromObject(root);
+   return {min:{x:b.min.x,y:b.min.y,z:b.min.z},max:{x:b.max.x,y:b.max.y,z:b.max.z}};
+ };
+ state.screenOfWorld=(x,y,z)=>{
+   const v=new THREE.Vector3(x,y,z).project(camera);
+   const r=canvas.getBoundingClientRect();
+   return {x:r.left+(v.x*0.5+0.5)*r.width,y:r.top+(-v.y*0.5+0.5)*r.height};
+ };
  // proyeksi titik lokal-model ke koordinat layar (dipakai hint marker & verifikasi)
  state.screenOf=(x,y,z)=>{
    if(!root)return null;

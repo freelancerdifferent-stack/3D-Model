@@ -9,7 +9,7 @@ if "window.__OBJECT_MACHINE__='auto';" not in s:
     raise SystemExit('This patch is Auto-machine only')
 
 css=r'''
-/* AUTO_RIG_PORTAL_V41 — UI portal only; Auto Rig engine intentionally not implemented yet */
+/* AUTO_RIG_PORTAL_V41 */
 html[data-object-machine="auto"] #editorScreen .auto-rig-portal-v41{
   margin-top:auto;min-height:58px;border:0;border-radius:10px;background:transparent;
   color:#19ef45;font-size:10px;flex:none;
@@ -37,14 +37,14 @@ js=r'''
   btn.className='object-extra-tool auto-rig-portal-v41';
   btn.innerHTML='<b>☠</b>Auto Rig';
 
-  // Place the portal directly above the bottom Select/Skeleton tools.
   const select=rail.querySelector('.object-select-bottom') || rail.querySelector('.tool');
   if(select) rail.insertBefore(btn,select);
   else rail.appendChild(btn);
 
-  // Portal only for now. The Auto Rig machine/route will be connected in a later task.
+  // V42 installs the real portal route in capture phase. This fallback is kept only
+  // so a partial development build never fails silently.
   btn.addEventListener('click',()=>{
-    if(typeof toast==='function') toast('Auto Rig portal siap — mesin Auto Rig belum diaktifkan.');
+    if(typeof toast==='function') toast('Auto Rig machine belum aktif pada build ini.');
   });
 })();
 '''
@@ -53,3 +53,9 @@ if i<0: raise SystemExit('script end missing')
 s=s[:i]+js+'\n'+s[i:]
 p.write_text(s,encoding='utf-8')
 print('Auto Rig portal UI v41 applied to Auto machine only')
+
+# Keep the build pipeline atomic: the existing workflow calls v41, then v41 installs
+# the Auto-owned rig engine. Edit/Create documents are never modified here.
+v42=Path('tools/patch_auto_rig_machine_v42.py')
+if not v42.exists(): raise SystemExit('Auto Rig machine v42 patch missing')
+exec(compile(v42.read_text(encoding='utf-8'),str(v42),'exec'))

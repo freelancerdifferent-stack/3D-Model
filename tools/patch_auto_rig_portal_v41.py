@@ -41,8 +41,6 @@ js=r'''
   if(select) rail.insertBefore(btn,select);
   else rail.appendChild(btn);
 
-  // V42 installs the real portal route in capture phase. This fallback is kept only
-  // so a partial development build never fails silently.
   btn.addEventListener('click',()=>{
     if(typeof toast==='function') toast('Auto Rig machine belum aktif pada build ini.');
   });
@@ -54,8 +52,11 @@ s=s[:i]+js+'\n'+s[i:]
 p.write_text(s,encoding='utf-8')
 print('Auto Rig portal UI v41 applied to Auto machine only')
 
-# Keep the build pipeline atomic: the existing workflow calls v41, then v41 installs
-# the Auto-owned rig engine. Edit/Create documents are never modified here.
+# Atomic Auto-only pipeline: portal -> machine -> runtime repair.
 v42=Path('tools/patch_auto_rig_machine_v42.py')
 if not v42.exists(): raise SystemExit('Auto Rig machine v42 patch missing')
 exec(compile(v42.read_text(encoding='utf-8'),str(v42),'exec'))
+
+v43=Path('tools/patch_auto_rig_fix_v43.py')
+if not v43.exists(): raise SystemExit('Auto Rig fix v43 patch missing')
+exec(compile(v43.read_text(encoding='utf-8'),str(v43),'exec'))

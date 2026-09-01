@@ -23,18 +23,24 @@ body.rig-workspace-v26 #editorScreen #objectTrackpadDrawer,
 body.rig-workspace-v26 #editorScreen #liveEditBadge{display:none!important}
 #rigWorkspaceV26{display:none;position:absolute;inset:0;z-index:60;pointer-events:none;color:#e7f2ff;font:12px system-ui}
 body.rig-workspace-v26 #rigWorkspaceV26{display:block}
-#rigWorkspaceV26 .rig-top{position:absolute;left:8px;right:8px;top:8px;height:42px;display:flex;align-items:center;gap:8px;padding:0 8px;background:rgba(12,18,26,.94);border:1px solid #315e87;border-radius:10px;box-shadow:0 6px 20px #0008;pointer-events:auto}
+#rigWorkspaceV26 .rig-top{position:absolute;left:124px;right:8px;top:8px;height:42px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(12,18,26,.94);border:1px solid #315e87;border-radius:10px;box-shadow:0 6px 20px #0008;pointer-events:auto}
 #rigWorkspaceV26 .rig-title{font-size:14px;font-weight:800;letter-spacing:.08em}
 #rigWorkspaceV26 .rig-status{min-width:0;flex:1;opacity:.78;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#rigWorkspaceV26 button{min-height:34px;border:1px solid #376d9d;border-radius:7px;background:#152b40;color:#dcecff;font-weight:700}
-#rigWorkspaceV26 .rig-bottom{position:absolute;left:8px;right:8px;bottom:8px;padding:10px;background:rgba(12,18,26,.96);border:1px solid #315e87;border-radius:12px;box-shadow:0 -6px 24px #0008;pointer-events:auto}
+#rigWorkspaceV26 button{border:1px solid #376d9d;background:#152b40;color:#dcecff;font-weight:700}
+#rigWorkspaceV26 .rig-bottom{position:absolute;left:124px;right:8px;bottom:8px;padding:10px;background:rgba(12,18,26,.96);border:1px solid #315e87;border-radius:12px;box-shadow:0 -6px 24px #0008;pointer-events:auto}
 #rigWorkspaceV26 .rig-grid{display:grid;grid-template-columns:54px minmax(0,1fr);gap:7px 8px;align-items:center}
 #rigWorkspaceV26 .rig-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #rigWorkspaceV26 .rig-slider{display:flex;align-items:center;gap:8px}
 #rigWorkspaceV26 .rig-slider input{width:100%;min-width:0}
 #rigWorkspaceV26 .rig-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+#rigWorkspaceV26 .rig-actions button{min-height:46px;border-radius:10px}
 #rigWorkspaceV26 #rigApplyV26{background:#173f62}
 #rigWorkspaceV26 #rigBindV26{background:#1b553c;border-color:#33795b}
+#rigWorkspaceV26 .rig-back-dock{position:absolute;left:8px;bottom:8px;width:100px;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:auto}
+#rigWorkspaceV26 #rigBackV26{width:92px;height:108px;border:2px solid #2d73ae;border-radius:13px;background:#17304c;color:#65aaff;box-shadow:inset 0 0 0 2px #2e75ba;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:5px}
+#rigWorkspaceV26 #rigBackV26 .rig-back-icon{font-size:31px;line-height:1}
+#rigWorkspaceV26 #rigBackV26 .rig-back-label{font-size:15px;font-weight:500}
+#rigWorkspaceV26 #rigBackArrowV26{width:92px;height:32px;border:0;background:transparent;color:#fff;font-size:28px;line-height:28px;padding:0}
 '''
 s=s.replace('</style>',css+'\n</style>',1)
 
@@ -54,9 +60,15 @@ js=r'''
  rigWorkspaceV26.id='rigWorkspaceV26';
  rigWorkspaceV26.innerHTML=`
    <div class="rig-top">
-     <button id="rigBackV26" type="button">← Skeleton</button>
      <div class="rig-title">RIG</div>
      <div id="rigStatusV26" class="rig-status">Tap mesh, lalu pilih bone</div>
+   </div>
+   <div class="rig-back-dock">
+     <button id="rigBackV26" type="button" aria-label="Kembali ke Skeleton">
+       <span class="rig-back-icon">☠</span>
+       <span class="rig-back-label">Skeleton</span>
+     </button>
+     <button id="rigBackArrowV26" type="button" aria-label="Kembali ke Skeleton">←</button>
    </div>
    <div class="rig-bottom">
      <div class="rig-grid">
@@ -137,6 +149,7 @@ js=r'''
  // Portal behavior: Rig never toggles an inline panel; it opens the dedicated workspace.
  rigBtn.onclick=()=>setRigModeV26(true);
  $('rigBackV26').onclick=()=>setRigModeV26(false);
+ $('rigBackArrowV26').onclick=()=>setRigModeV26(false);
  $('rigApplyV26').onclick=applyRigWeightV26;
  $('rigBindV26').onclick=bindRigV26;
  rigWeightV26.oninput=syncRigUiV26;rigRadiusV26.oninput=syncRigUiV26;

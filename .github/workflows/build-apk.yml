@@ -107,6 +107,25 @@ jobs:
           ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/auto.html
           ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/auto.html
           test -f app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm
+      - name: Verify editor feature markers in every machine
+        run: |
+          for doc in index create auto; do
+            f="app/src/main/assets/$doc.html"
+            for m in LIVE_EDIT_SELECT_UNDO_V28 liveUndoBtn liveRedoBtn \
+                     SKELETON_UNDO_REDO_V29 skelUndoBtn skelRedoBtn \
+                     skeletonUndoActionV29 skeletonRedoActionV29 \
+                     SKELETON_LIVE_EDIT_V20 SKELETON_TOOL_ROUTES_V21 SKELETON_VISUAL_V23 \
+                     SKELETON_BONE_MANAGE_V24 SKELETON_RIG_V26 SKELETON_TRACKPAD_ZOOM_V27 \
+                     OBJECT_UI_V9 OFFLINE_RUNTIME_V1 PROJECT_ROUNDTRIP_V20 loadFbxWithAssimp; do
+              if ! grep -q "$m" "$f"; then echo "HILANG: $m di $doc.html"; exit 1; fi
+            done
+            for b in OBJECT_UNDO_REDO_V10 OBJECT_UNDO_REDO_V12 \
+                     skeletonUndoActionV21 pushSkeletonHistoryV21 \
+                     skeletonRedoActionV21 skeletonRedoBtn; do
+              if grep -q "$b" "$f"; then echo "TERLARANG: $b hidup lagi di $doc.html"; exit 1; fi
+            done
+          done
+          echo "Semua penanda fitur editor utuh di ketiga mesin"
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.9' }
       - name: Build debug APK

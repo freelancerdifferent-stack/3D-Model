@@ -127,7 +127,9 @@ jobs:
         run: python3 tools/patch_adaptive_floor_grid_v17.py
       - name: Make runtime fully offline
         run: python3 tools/patch_offline_runtime.py
-      - name: Verify editor pipeline and offline runtime
+      - name: Split Edit and Create into independent runtimes
+        run: python3 tools/patch_create_machine_v32.py
+      - name: Verify editor pipeline and isolated machines
         run: |
           grep -q "loadFbxWithAssimp" app/src/main/assets/index.html
           grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/index.html
@@ -143,6 +145,17 @@ jobs:
           grep -q "objectPortalEditV30" app/src/main/assets/index.html
           grep -q "objectPortalCreateV30" app/src/main/assets/index.html
           grep -q "objectPortalAutoV30" app/src/main/assets/index.html
+          grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
+          grep -q "window.__OBJECT_MACHINE__='edit'" app/src/main/assets/index.html
+          grep -q "window.location.href='create.html'" app/src/main/assets/index.html
+          test -f app/src/main/assets/create.html
+          grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
+          grep -q "CREATE_MACHINE_STORAGE_V32" app/src/main/assets/create.html
+          grep -q "window.__OBJECT_MACHINE__='create'" app/src/main/assets/create.html
+          grep -q "OBJECT_UI_V9" app/src/main/assets/create.html
+          grep -q "OFFLINE_RUNTIME_V1" app/src/main/assets/create.html
+          grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/create.html
+          grep -q "SKELETON_RIG_V26" app/src/main/assets/create.html
           grep -q 'data-go="editorScreen"' app/src/main/assets/index.html
           grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
           grep -q "SKELETON_TRACKPAD_ZOOM_V27" app/src/main/assets/index.html
@@ -178,6 +191,8 @@ jobs:
           grep -q "ADAPTIVE_FLOOR_GRID_V17" app/src/main/assets/index.html
           ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/index.html
           ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/index.html
+          ! grep -q "cdn.jsdelivr.net/npm/three@" app/src/main/assets/create.html
+          ! grep -q "cdn.jsdelivr.net/npm/assimpjs@" app/src/main/assets/create.html
           test -f app/src/main/assets/vendor/assimpjs/dist/assimpjs.wasm
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

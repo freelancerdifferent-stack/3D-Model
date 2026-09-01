@@ -135,7 +135,7 @@ jobs:
           grep -q "PROJECT_CHUNK_WRITER_V20" app/src/main/java/com/differentfreelancer/model3d/MainActivity.java
           grep -q "OBJECT_UI_V9" app/src/main/assets/index.html
           grep -q "OBJECT_PORTALS_V30" app/src/main/assets/index.html
-          grep -q "objectPortalHomeV30" app/src/main/assets/index.html
+          grep -q "objectModeHomeV30" app/src/main/assets/index.html
           grep -q "objectPortalEditV30" app/src/main/assets/index.html
           grep -q "objectPortalCreateV30" app/src/main/assets/index.html
           grep -q "objectPortalAutoV30" app/src/main/assets/index.html

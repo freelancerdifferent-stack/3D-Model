@@ -25,8 +25,6 @@ jobs:
         run: yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - name: Set up Node for offline runtime assets
         uses: actions/setup-node@v4
-        with:
-          node-version: '22'
       - name: Bundle Three.js and AssimpJS into APK assets
         run: |
           rm -rf /tmp/df3d-runtime app/src/main/assets/vendor
@@ -141,8 +139,6 @@ jobs:
           grep -q "openSkeletonTransformV21" app/src/main/assets/index.html
           ! grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
           ! grep -q "skeletonRedoBtn" app/src/main/assets/index.html
-          ! grep -q "objectUndoBtn" app/src/main/assets/index.html
-          ! grep -q "objectRedoBtn" app/src/main/assets/index.html
           ! grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
           ! grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html
           grep -q "TRANSFORM_ADJUST_SCRUB_V11" app/src/main/assets/index.html

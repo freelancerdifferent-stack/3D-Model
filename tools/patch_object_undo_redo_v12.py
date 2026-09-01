@@ -59,8 +59,8 @@ js=r'''
    apply(c.after);undoStack.push(c);refresh();msg('Redo '+c.label);return true;
  }
  undoBtn.onclick=e=>{
-   // Object/Mesh route NEVER runs in Skeleton mode. Skeleton has a different
-   // stack and different action functions in SKELETON_TOOL_ROUTES_V21.
+   // Object/Mesh route NEVER runs in Skeleton mode. Skeleton owns a separate
+   // history stack and dedicated action functions.
    if(skeletonOwnsHistoryV12())return;
    e.preventDefault();e.stopPropagation();objectUndoActionV12();
  };

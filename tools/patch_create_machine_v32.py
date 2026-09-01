@@ -29,7 +29,6 @@ c=s
 c=c.replace('// EDIT_MACHINE_V32','// CREATE_MACHINE_V32',1)
 c=c.replace("window.__OBJECT_MACHINE__='edit';","window.__OBJECT_MACHINE__='create';",1)
 c=c.replace("<title>3D Viewer & Editor</title>","<title>3D Viewer & Editor — Create</title>",1)
-c=c.replace('<span>GLB • FBX • PNG</span>','<span>CREATE • GLB • FBX • PNG</span>',1)
 
 # Create owns its own portal routing. Returning to Edit reloads the Edit runtime,
 # while Create remains inside this independent document/runtime instance.
@@ -38,17 +37,15 @@ c=c.replace("document.getElementById('objectPortalEditV30').onclick=()=>go('edit
 c=c.replace("document.getElementById('objectPortalCreateV30').onclick=()=>{window.location.href='create.html'};",
             "document.getElementById('objectPortalCreateV30').onclick=()=>go('editorScreen');",1)
 
-# Strong visual identity for Create without changing Edit styling.
+# Create is distinguished only by its emerald visual theme. No mode labels/badges are injected.
 create_theme=r'''
 /* CREATE_MACHINE_THEME_V33 */
 html[data-object-machine="create"]{--create-accent:#43e0a1;--create-accent-soft:#173d31;--create-line:#2d735a}
 html[data-object-machine="create"] body{background:radial-gradient(circle at 50% -10%,#16372d 0,#0d1817 34%,#090f12 72%)!important}
 html[data-object-machine="create"] .topbar{background:linear-gradient(180deg,#173a30,#101b1a)!important;border-bottom-color:#2d735a!important}
-html[data-object-machine="create"] .topbar:after{content:'CREATE MODE';display:inline-flex;align-items:center;margin-left:8px;padding:4px 8px;border:1px solid #43e0a1;border-radius:999px;background:#12362b;color:#79f2c2;font-size:9px;font-weight:900;letter-spacing:.12em;white-space:nowrap}
 html[data-object-machine="create"] .bottomnav{background:linear-gradient(180deg,#101a19,#0b1214)!important;border-top-color:#285e4b!important}
 html[data-object-machine="create"] .nav.active,html[data-object-machine="create"] .nav:active{color:#68edb7!important}
 html[data-object-machine="create"] .tool.active,html[data-object-machine="create"] button.active{border-color:#43e0a1!important;box-shadow:0 0 0 1px #43e0a155 inset!important}
-html[data-object-machine="create"] #editorScreen:before{content:'CREATE';position:absolute;z-index:40;top:58px;left:50%;transform:translateX(-50%);pointer-events:none;padding:5px 12px;border:1px solid #43e0a1;border-radius:999px;background:#0c211bcc;color:#76f0bf;font-size:10px;font-weight:900;letter-spacing:.16em;box-shadow:0 6px 20px #0008}
 html[data-object-machine="create"] #objectModeHomeV30{border-color:#2d735a!important;background:linear-gradient(180deg,#16352c,#101b19)!important}
 '''
 if '</style>' not in c:
@@ -72,4 +69,4 @@ document.documentElement.dataset.objectMachine='create';
 c=c.replace('</script>',create_boot+'\n</script>',1)
 
 create_path.write_text(c,encoding='utf-8')
-print('Create machine v32 generated with isolated runtime and distinct Create theme v33')
+print('Create machine v32 generated with isolated runtime and emerald-only Create theme v33')

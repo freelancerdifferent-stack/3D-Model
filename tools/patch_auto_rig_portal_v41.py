@@ -59,6 +59,7 @@ for script,label in [
  ('tools/patch_auto_rig_height_fix_v44.py','Auto Rig height fix v44'),
  ('tools/patch_auto_rig_centerline_fix_v45.py','Auto Rig centerline fix v45'),
  ('tools/patch_auto_rig_reference_skeleton_v46.py','Auto Rig reference skeleton v46'),
+ ('tools/patch_auto_vertical_guide_v47.py','Auto vertical guide v47'),
 ]:
     q=Path(script)
     if not q.exists(): raise SystemExit(label+' patch missing')

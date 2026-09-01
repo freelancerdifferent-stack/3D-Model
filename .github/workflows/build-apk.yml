@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "GPT2" ]
+    branches: [ "main", "GPT2" ]
   workflow_dispatch:
 
 permissions:

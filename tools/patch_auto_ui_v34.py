@@ -24,12 +24,18 @@ s=s.replace('#objectModeHomeV30 .auto .omh-next{color:#756b59;font-size:18px}','
 edit_path.write_text(s,encoding='utf-8')
 
 # AUTO_MACHINE_V35
+# The source is duplicated into a separate document at build time. Once auto.html
+# is written it is a separate runtime: no shared scene, renderer, camera, controls,
+# selection, animation state, history, or event lifecycle with any other mode.
 a=s
 if "window.__OBJECT_MACHINE__='edit';" in a:
     a=a.replace("window.__OBJECT_MACHINE__='edit';","window.__OBJECT_MACHINE__='auto';",1)
 a=a.replace('// EDIT_MACHINE_V32','// AUTO_MACHINE_V35',1)
 a=a.replace('<title>3D Viewer & Editor</title>','<title>3D Viewer & Editor — Auto</title>',1)
 a=a.replace('<span>GLB • FBX • PNG</span>','<span>AUTO • GLB • FBX • PNG</span>',1)
+
+# Object Mode portal may switch documents. This is navigation only, never a
+# runtime bridge. Auto's own screens stay inside auto.html.
 a=a.replace("document.getElementById('objectPortalEditV30').onclick=()=>go('editorScreen');","document.getElementById('objectPortalEditV30').onclick=()=>{window.location.href='index.html'};",1)
 a=a.replace("document.getElementById('objectPortalAutoV30').onclick=()=>{window.location.href='auto.html'};","document.getElementById('objectPortalAutoV30').onclick=()=>go('homeScreen');",1)
 
@@ -44,8 +50,10 @@ window.__AUTO_ENGINE_ENABLED__=true;
 window.__autoMachineRuntimeV35={
   mode:'auto', isolatedDocument:true,
   inputEngine:true, outputEngine:true,
-  homeEngine:'edit-baseline', exportEngine:'edit-baseline',
-  toolkitEngine:false, viewerEngine:false, assetsEngine:false
+  homeEngine:'auto', exportEngine:'auto',
+  toolkitEngine:false, viewerEngine:false, assetsEngine:false,
+  sharesRuntimeWithEdit:false,
+  sharesRuntimeWithCreate:false
 };
 document.documentElement.dataset.objectMachine='auto';
 requestAnimationFrame(()=>{
@@ -82,9 +90,8 @@ html[data-object-machine="auto"] #objectModeHomeV30 .omh-card.auto{border-color:
 a=a.replace('</style>',auto_css+'\n</style>',1)
 
 auto_path.write_text(a,encoding='utf-8')
-print('Auto machine v35 active: independent runtime; Home/input and Export/output use Edit baseline')
+print('Auto machine v35 active as an isolated document/runtime')
 
-# Apply the dedicated Auto Viewer UI + machine after auto.html exists.
 viewer_patch=Path(__file__).with_name('patch_auto_viewer_v36.py')
 if not viewer_patch.exists():
     raise SystemExit('Auto Viewer v36 patch missing')

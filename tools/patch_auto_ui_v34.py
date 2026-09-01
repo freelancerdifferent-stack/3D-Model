@@ -62,7 +62,7 @@ requestAnimationFrame(()=>{
   const exp=document.getElementById('autoExportNavV35');
   home.onclick=()=>{activate(home);go('homeScreen')};
   exp.onclick=()=>{activate(exp);go('exportScreen')};
-  ['autoToolkitNavV35','autoViewerNavV35','autoAssetsNavV35'].forEach(id=>{
+  ['autoToolkitNavV35','autoAssetsNavV35'].forEach(id=>{
     const b=document.getElementById(id);
     b.onclick=()=>{activate(b);msg(b.textContent.trim()+' — UI/mesin akan dibuat berikutnya')};
   });
@@ -82,4 +82,10 @@ html[data-object-machine="auto"] #objectModeHomeV30 .omh-card.auto{border-color:
 a=a.replace('</style>',auto_css+'\n</style>',1)
 
 auto_path.write_text(a,encoding='utf-8')
-print('Auto machine v35 active: independent runtime; Home/input and Export/output use Edit baseline; Toolkit/Viewer/Assets reserved')
+print('Auto machine v35 active: independent runtime; Home/input and Export/output use Edit baseline')
+
+# Apply the dedicated Auto Viewer UI + machine after auto.html exists.
+viewer_patch=Path(__file__).with_name('patch_auto_viewer_v36.py')
+if not viewer_patch.exists():
+    raise SystemExit('Auto Viewer v36 patch missing')
+exec(compile(viewer_patch.read_text(encoding='utf-8'), str(viewer_patch), 'exec'))

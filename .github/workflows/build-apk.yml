@@ -107,18 +107,14 @@ jobs:
         run: python3 tools/patch_transform_adjust_scrub_v11.py
       - name: Fix Android Live Edit undo redo capture
         run: python3 tools/patch_object_undo_redo_v12.py
-      - name: Route Move Transform Undo Redo to Skeleton path
+      - name: Route Skeleton tools with Undo only
         run: python3 tools/patch_skeleton_tool_routes_v21.py
-      - name: Fix Skeleton Redo on Android
-        run: python3 tools/patch_skeleton_redo_fix_v22.py
       - name: Style Skeleton bones and selected bone
         run: python3 tools/patch_skeleton_visual_v23.py
       - name: Enable Add Duplicate Remove Bone
         run: python3 tools/patch_skeleton_bone_manage_v24.py
-      - name: Own Skeleton Undo Redo Android touch route
-        run: python3 tools/patch_skeleton_redo_touch_v25.py
-      - name: Add dedicated Skeleton Redo UI
-        run: python3 tools/patch_skeleton_dedicated_redo_v28.py
+      - name: Enable Skeleton Rig
+        run: python3 tools/patch_skeleton_rig_v26.py
       - name: Add Export All and selective GLB options
         run: python3 tools/patch_export_all_v13.py
       - name: Restore selected Mesh Transform panel
@@ -141,16 +137,14 @@ jobs:
           grep -q "SKELETON_LIVE_EDIT_V20" app/src/main/assets/index.html
           grep -q "SKELETON_TRACKPAD_ZOOM_V27" app/src/main/assets/index.html
           grep -q "SKELETON_TOOL_ROUTES_V21" app/src/main/assets/index.html
-          grep -q "SKELETON_REDO_FIX_V22" app/src/main/assets/index.html
           grep -q "SKELETON_VISUAL_V23" app/src/main/assets/index.html
           grep -q "SKELETON_BONE_MANAGE_V24" app/src/main/assets/index.html
-          grep -q "SKELETON_REDO_TOUCH_V25" app/src/main/assets/index.html
-          grep -q "SKELETON_DEDICATED_REDO_V28" app/src/main/assets/index.html
-          grep -q "skeletonRedoBtn" app/src/main/assets/index.html
+          grep -q "SKELETON_RIG_V26" app/src/main/assets/index.html
           grep -q "skeletonRemoveBoneBtn" app/src/main/assets/index.html
-          grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
           grep -q "skeletonUndoActionV21" app/src/main/assets/index.html
           grep -q "openSkeletonTransformV21" app/src/main/assets/index.html
+          ! grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
+          ! grep -q "skeletonRedoBtn" app/src/main/assets/index.html
           grep -q "OBJECT_UNDO_REDO_V10" app/src/main/assets/index.html
           grep -q "TRANSFORM_ADJUST_SCRUB_V11" app/src/main/assets/index.html
           grep -q "OBJECT_UNDO_REDO_V12" app/src/main/assets/index.html

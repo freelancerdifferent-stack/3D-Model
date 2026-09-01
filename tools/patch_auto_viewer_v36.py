@@ -9,10 +9,9 @@ if 'AUTO_VIEWER_V36' in s:
     print('Auto Viewer v36 already applied')
     raise SystemExit(0)
 
-# AUTO VIEWER RULE: the engine/layout is the exact Edit Object baseline already
-# present in auto.html (auto.html itself is cloned from the fully-patched Edit
-# runtime). This patch only adds Auto Viewer presentation overlays. Never change
-# .editor grid tracks, viewport geometry, canvas, camera, renderer or model state.
+# Auto Viewer runs only inside auto.html and only against Auto-owned DOM/state.
+# No cross-document bridge, parent/opener channel, shared renderer, or external
+# mode runtime is referenced here.
 css=r'''
 /* AUTO_VIEWER_V36 */
 html[data-object-machine="auto"] #editorScreen .viewport{background:#17191b}
@@ -35,17 +34,19 @@ s=s.replace('</style>',css+'\n</style>',1)
 
 js=r'''
 // AUTO_VIEWER_V36
-// Engine source: Edit -> Object. Auto does not create a second renderer here.
 window.__autoMachineRuntimeV35.viewerEngine=true;
-window.__autoMachineRuntimeV35.viewerEngineVersion='v36-edit-object-baseline';
+window.__autoMachineRuntimeV35.viewerEngineVersion='v36-auto-native';
+window.__autoViewerRuntimeV36={
+  owner:'auto',
+  isolated:true,
+  crossModeBridge:false
+};
 requestAnimationFrame(()=>{
   const editor=document.getElementById('editorScreen');
   const viewport=editor?.querySelector('.viewport');
   const animSelect=document.getElementById('animSelect');
   if(!editor || !viewport || !animSelect) return;
 
-  // Presentation only: reuse the real Edit animation selector with all of its
-  // existing listeners/state. No replacement animation engine is introduced.
   const oldWrap=animSelect.parentElement;
   const bar=document.createElement('div');
   bar.id='autoViewerAnimBarV36';
@@ -78,14 +79,10 @@ requestAnimationFrame(()=>{
   const activateViewer=()=>{
     if(viewer && nav){nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));viewer.classList.add('active')}
     go('editorScreen');
-    // Use the exact same resize path expected by Edit Object after screen reveal.
     requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
   };
   if(viewer) viewer.onclick=activateViewer;
 
-  // Import flow from Home already uses Edit's loader and model scene. When that
-  // loader opens editorScreen, only update the Auto nav state; do not reframe,
-  // replace, move or clone the loaded model/camera/scene.
   new MutationObserver(()=>{
     if(editor.classList.contains('active')){
       if(viewer && nav){nav.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));viewer.classList.add('active')}
@@ -98,4 +95,4 @@ requestAnimationFrame(()=>{
 s=s.replace('</script>',js+'\n</script>',1)
 
 p.write_text(s,encoding='utf-8')
-print('Auto Viewer v36: Edit Object engine preserved exactly; Auto adds presentation only')
+print('Auto Viewer v36 isolated: no cross-mode runtime bridge')

@@ -56,13 +56,9 @@ js=r'''
  if(select) select.classList.add('object-select-bottom');
  const mk=(icon,label,id)=>{const b=document.createElement('button');b.type='button';b.className='object-extra-tool';b.id=id;b.innerHTML='<b>'+icon+'</b>'+label;return b};
  const transform=mk('＋','Transform','objectTransformToggle');
- const undo=mk('←','Undo','objectUndoBtn');
- const redo=mk('→','Redo','objectRedoBtn');
  rail.innerHTML='';
- [move,rotate,scale,frame,transform,undo,redo,select].filter(Boolean).forEach(x=>rail.appendChild(x));
+ [move,rotate,scale,frame,transform,select].filter(Boolean).forEach(x=>rail.appendChild(x));
  transform.onclick=()=>{const props=editor.querySelector('.props'); if(!props)return; const open=props.style.display!=='block'; props.style.display=open?'block':'none'; if(open){props.style.position='absolute';props.style.left='58px';props.style.right='0';props.style.bottom='0';props.style.zIndex='20';props.style.maxHeight='245px'} transform.classList.toggle('active',open)};
- undo.onclick=()=>{try{document.execCommand('undo')}catch(_){};msg('Undo')};
- redo.onclick=()=>{try{document.execCommand('redo')}catch(_){};msg('Redo')};
  const cam=document.createElement('div');cam.className='object-camera-pad';cam.id='objectCameraPad';
  cam.innerHTML='<button type="button" data-pan="up">▲</button><button type="button" data-pan="down">▼</button><button type="button" data-pan="left">◀</button><button type="button" data-pan="right">▶</button>';
  viewport.appendChild(cam);
@@ -87,4 +83,4 @@ idx=s.rfind('</script>')
 if idx<0: raise SystemExit('script end missing')
 s=s[:idx]+js+'\n'+s[idx:]
 p.write_text(s,encoding='utf-8')
-print('Object UI v9 applied')
+print('Object UI v9 applied: normal Live Edit has no Undo/Redo controls or handlers')

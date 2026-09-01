@@ -117,6 +117,8 @@ jobs:
         run: python3 tools/patch_skeleton_bone_manage_v24.py
       - name: Own Skeleton Undo Redo Android touch route
         run: python3 tools/patch_skeleton_redo_touch_v25.py
+      - name: Add dedicated Skeleton Redo UI
+        run: python3 tools/patch_skeleton_dedicated_redo_v28.py
       - name: Add Export All and selective GLB options
         run: python3 tools/patch_export_all_v13.py
       - name: Restore selected Mesh Transform panel
@@ -143,6 +145,8 @@ jobs:
           grep -q "SKELETON_VISUAL_V23" app/src/main/assets/index.html
           grep -q "SKELETON_BONE_MANAGE_V24" app/src/main/assets/index.html
           grep -q "SKELETON_REDO_TOUCH_V25" app/src/main/assets/index.html
+          grep -q "SKELETON_DEDICATED_REDO_V28" app/src/main/assets/index.html
+          grep -q "skeletonRedoBtn" app/src/main/assets/index.html
           grep -q "skeletonRemoveBoneBtn" app/src/main/assets/index.html
           grep -q "skeletonRedoActionV21" app/src/main/assets/index.html
           grep -q "skeletonUndoActionV21" app/src/main/assets/index.html

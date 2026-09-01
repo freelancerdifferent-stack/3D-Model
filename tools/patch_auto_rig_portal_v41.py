@@ -52,7 +52,7 @@ s=s[:i]+js+'\n'+s[i:]
 p.write_text(s,encoding='utf-8')
 print('Auto Rig portal UI v41 applied to Auto machine only')
 
-# Atomic Auto-only pipeline: portal -> machine -> runtime repair -> stable height.
+# Atomic Auto-only pipeline: portal -> machine -> runtime repair -> stable height -> centerline.
 v42=Path('tools/patch_auto_rig_machine_v42.py')
 if not v42.exists(): raise SystemExit('Auto Rig machine v42 patch missing')
 exec(compile(v42.read_text(encoding='utf-8'),str(v42),'exec'))
@@ -64,3 +64,7 @@ exec(compile(v43.read_text(encoding='utf-8'),str(v43),'exec'))
 v44=Path('tools/patch_auto_rig_height_fix_v44.py')
 if not v44.exists(): raise SystemExit('Auto Rig height fix v44 patch missing')
 exec(compile(v44.read_text(encoding='utf-8'),str(v44),'exec'))
+
+v45=Path('tools/patch_auto_rig_centerline_fix_v45.py')
+if not v45.exists(): raise SystemExit('Auto Rig centerline fix v45 patch missing')
+exec(compile(v45.read_text(encoding='utf-8'),str(v45),'exec'))

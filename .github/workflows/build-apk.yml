@@ -84,6 +84,7 @@ jobs:
           python3 tools/patch_auto_rig_bone_tidy_v51.py
           python3 tools/patch_anim_library_v52.py
           python3 tools/patch_auto_rig_weights_v53.py
+          python3 tools/patch_auto_rig_align_v54.py
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html
@@ -112,6 +113,10 @@ jobs:
           grep -q "AUTO_RIG_WEIGHTS_V53" app/src/main/assets/auto.html
           ! grep -q "AUTO_RIG_WEIGHTS_V53" app/src/main/assets/index.html
           ! grep -q "AUTO_RIG_WEIGHTS_V53" app/src/main/assets/create.html
+          grep -q "AUTO_RIG_ALIGN_V54" app/src/main/assets/auto.html
+          grep -q "mapCoreBonesV54" app/src/main/assets/auto.html
+          ! grep -q "AUTO_RIG_ALIGN_V54" app/src/main/assets/index.html
+          ! grep -q "AUTO_RIG_ALIGN_V54" app/src/main/assets/create.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

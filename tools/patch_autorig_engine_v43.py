@@ -288,15 +288,31 @@ js=r'''
    const roots=[];
    root.traverse(o=>{if(o.isBone&&(!o.parent||!o.parent.isBone))roots.push(o)});
    for(const b of roots){saved.boneRoots.push({bone:b,parent:b.parent});if(b.parent)b.parent.remove(b)}
+   // Geometry mentah SkinnedMesh sering tidak sama dengan yang tampil (penempatan dan
+   // skala dibawa tulang+bindMatrix, khas FBX berbasis cm). Panggang pose yang sedang
+   // TAMPIL ke geometry pengganti lewat getVertexPosition, supaya mesh polos berdiri
+   // persis di tempat user melihat dan menandainya.
+   root.updateMatrixWorld(true);
    for(let i=0;i<meshList.length;i++){
      const m=meshList[i];
      if(!m||!m.isSkinnedMesh)continue;
+     m.updateMatrixWorld(true);
      const g=m.geometry.clone();
      g.deleteAttribute('skinIndex');g.deleteAttribute('skinWeight');
+     const pos=g.getAttribute('position');
+     const v=new THREE.Vector3();
+     for(let j=0;j<pos.count;j++){
+       m.getVertexPosition(j,v);            // pose ter-skin saat ini, ruang lokal mesh
+       v.applyMatrix4(m.matrixWorld);       // ke dunia
+       root.worldToLocal(v);                // ke lokal root
+       pos.setXYZ(j,v.x,v.y,v.z);
+     }
+     pos.needsUpdate=true;
+     g.computeVertexNormals();
+     g.computeBoundingBox();g.computeBoundingSphere();
      const nm=new THREE.Mesh(g,m.material);
      nm.name=m.name;nm.castShadow=m.castShadow;nm.receiveShadow=m.receiveShadow;
-     nm.position.copy(m.position);nm.quaternion.copy(m.quaternion);nm.scale.copy(m.scale);
-     m.parent.add(nm);
+     root.add(nm);                          // transform identitas relatif root
      saved.meshes.push({old:m,parent:m.parent,replacement:nm,index:i});
      m.parent.remove(m);
      meshList[i]=nm;

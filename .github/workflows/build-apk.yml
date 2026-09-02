@@ -80,6 +80,7 @@ jobs:
           python3 tools/patch_create_machine_v32.py
           python3 tools/patch_auto_machine_v39.py
           python3 tools/patch_auto_rig_portal_v41.py
+          python3 tools/patch_auto_rig_replace_old_v50.py
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html
@@ -94,6 +95,10 @@ jobs:
           grep -q "autoRigPortalV41" app/src/main/assets/auto.html
           ! grep -q "AUTO_RIG_PORTAL_V41" app/src/main/assets/index.html
           ! grep -q "AUTO_RIG_PORTAL_V41" app/src/main/assets/create.html
+          grep -q "AUTO_RIG_REPLACE_OLD_V50" app/src/main/assets/auto.html
+          grep -q "stripOldRigV50" app/src/main/assets/auto.html
+          ! grep -q "AUTO_RIG_REPLACE_OLD_V50" app/src/main/assets/index.html
+          ! grep -q "AUTO_RIG_REPLACE_OLD_V50" app/src/main/assets/create.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

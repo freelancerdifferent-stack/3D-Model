@@ -76,6 +76,7 @@ jobs:
           python3 tools/patch_adaptive_floor_grid_v17.py
           python3 tools/patch_offline_runtime.py
           python3 tools/patch_mode_storage_split_v40.py
+          python3 tools/patch_export_skinned_clone_v44.py
           python3 tools/patch_create_machine_v32.py
           python3 tools/patch_auto_machine_v39.py
           python3 tools/patch_auto_rig_portal_v41.py
@@ -101,6 +102,11 @@ jobs:
           grep -q "MODE_STORAGE_SPLIT_V40" app/src/main/assets/index.html
           grep -q "MODE_STORAGE_SPLIT_V40" app/src/main/assets/create.html
           grep -q "MODE_STORAGE_SPLIT_V40" app/src/main/assets/auto.html
+          grep -q "EXPORT_SKINNED_CLONE_V44" app/src/main/assets/index.html
+          grep -q "EXPORT_SKINNED_CLONE_V44" app/src/main/assets/create.html
+          grep -q "EXPORT_SKINNED_CLONE_V44" app/src/main/assets/auto.html
+          ! grep -q "const c=src.clone(true)" app/src/main/assets/index.html
+          ! grep -q "const c=src.clone(true)" app/src/main/assets/auto.html
           grep -q "modeStorageSuffixV40" app/src/main/assets/index.html
           grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/index.html
           grep -q "FBX_VIEWER_REPAIR_V38" app/src/main/assets/create.html

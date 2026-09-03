@@ -30,7 +30,7 @@ old_post='''          const postV60=rn.quaternion.clone().invert().multiply(R.re
             q.normalize();
             q.toArray(vals,i);
           }'''
-new_post='''          const legV61=/^(Left|Right)(UpLeg|Leg|Foot|ToeBase)$/.test(nodeName);
+new_post='''          const legV61=/^((Left|Right)(UpLeg|Leg|Foot|ToeBase)|Spine02|Spine01|Spine|neck|Head)$/.test(nodeName);
           const postV60=legV61?null:rn.quaternion.clone().invert().multiply(R.restMap.get(tb).lq);
           const preV60=(nodeName==='LeftUpLeg')?spreadV60.L:((nodeName==='RightUpLeg')?spreadV60.R:null);
           const vals=new Float32Array(tr.values.length);

@@ -59,6 +59,50 @@ funcs=r'''  // ANIM_LIB_GROUNDFACE_V62
           }
         }
       }
+      // 1b) tegakkan kemiringan samping (roll): rata-rata vektor atas hips
+      // satu siklus dibandingkan rest, dikoreksi pada sumbu depan horizontal -
+      // condong ke depan (pitch) khas lari TIDAK disentuh
+      {
+        const U=new THREE.Vector3(0,1,0);
+        const fh=new THREE.Vector3(0,0,1).applyQuaternion(R.restMap.get(hips).wq);fh.y=0;
+        if(fh.lengthSq()>1e-6){
+          const F=fh.normalize();
+          const S=new THREE.Vector3().crossVectors(U,F).normalize();
+          const ur=new THREE.Vector3(0,1,0).applyQuaternion(R.restMap.get(hips).wq);
+          for(let iterV62=0;iterV62<3;iterV62++){
+          const mu=new THREE.Vector3();
+          for(let i=0;i<8;i++){
+            mixer2.setTime(nc.duration*(i+0.5)/8);root.updateMatrixWorld(true);
+            mu.add(new THREE.Vector3(0,1,0).applyQuaternion(hips.getWorldQuaternion(new THREE.Quaternion())));
+          }
+          mu.normalize();
+          const roll=Math.atan2(mu.dot(S),mu.dot(U))-Math.atan2(ur.dot(S),ur.dot(U));
+          if(Math.abs(roll)<=0.017)break;
+          if(Math.abs(roll)>0.01){
+            const Rq=new THREE.Quaternion().setFromAxisAngle(F,roll);
+            const tqp2=(hips.parent&&hips.parent.isBone&&R.restMap.get(hips.parent))?R.restMap.get(hips.parent).wq:R.rootWQ;
+            const pre2=tqp2.clone().invert().multiply(Rq).multiply(tqp2);
+            const quatTrack2=nc.tracks.find(t2=>t2.name===hips.name+'.quaternion');
+            if(quatTrack2){
+              const q3=new THREE.Quaternion();
+              for(let i=0;i<quatTrack2.values.length;i+=4){
+                q3.fromArray(quatTrack2.values,i);
+                q3.premultiply(pre2).normalize();
+                q3.toArray(quatTrack2.values,i);
+              }
+            }
+            if(posTrack){
+              const rp2=R.restMap.get(hips).p;const v2=new THREE.Vector3();
+              for(let i=0;i<posTrack.values.length;i+=3){
+                v2.set(posTrack.values[i]-rp2.x,posTrack.values[i+1]-rp2.y,posTrack.values[i+2]-rp2.z);
+                v2.applyQuaternion(Rq);
+                posTrack.values[i]=rp2.x+v2.x;posTrack.values[i+1]=rp2.y+v2.y;posTrack.values[i+2]=rp2.z+v2.z;
+              }
+            }
+          }
+          }
+        }
+      }
       // 2) injak lantai: geser Y hips agar kaki terendah siklus di lantai
       if(posTrack){
         let minY=Infinity;

@@ -101,6 +101,7 @@ prep_js='''function prepFbxV55(obj){
           try{m.map.dispose?.()}catch(_){ }
           m.map=null;m.needsUpdate=true;
         }
+        if(m.map&&m.map.flipY!==false){m.map.flipY=false;m.map.needsUpdate=true;m.needsUpdate=true}
         if(!m.map){
           if(m.transparent&&(m.opacity===undefined||m.opacity>=0.99)){m.transparent=false;m.needsUpdate=true}
           if(m.color&&(m.color.r+m.color.g+m.color.b)<0.25){m.color.setHex(0xcccccc);m.needsUpdate=true}
@@ -112,6 +113,19 @@ prep_js='''function prepFbxV55(obj){
     if(o.isSkinnedMesh){
       o.frustumCulled=false;
       try{o.normalizeSkinWeights?.()}catch(e){}
+    }
+  });
+  // Samakan konvensi UV dengan jalur GLB: glTF memakai V terbalik dari FBX,
+  // dan seluruh pipeline app (Apply Texture flipY=false, export GLTF)
+  // memakai konvensi glTF. UV hasil FBXLoader dibalik SEKALI di sini; tanpa
+  // ini tekstur PNG yang dipasang pengguna tampil terbalik/berantakan.
+  obj.traverse(o=>{
+    if((o.isMesh||o.isSkinnedMesh)&&o.geometry&&!o.geometry.userData.uvFlippedV55){
+      for(const key of ['uv','uv1','uv2','uv3']){
+        const at=o.geometry.attributes[key];
+        if(at){for(let i=0;i<at.count;i++)at.setY(i,1-at.getY(i));at.needsUpdate=true}
+      }
+      o.geometry.userData.uvFlippedV55=true;
     }
   });
   fixMatsV55();

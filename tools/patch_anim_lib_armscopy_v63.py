@@ -35,7 +35,7 @@ s=s.replace(old_set,new_set,1)
 old_cmap='''    }catch(_){ }
     for(const tr of clip.tracks){'''
 new_cmap='''    }catch(_){ }
-    /* koreksi aim: selaraskan arah tulang->anak dengan referensi */
+    /* ANIM_LIB_ARMSCOPY_V63: koreksi aim - selaraskan arah tulang->anak dengan referensi */
     const cmapV63={};
     if(familyV59){
       const CCV63={Spine02:'Spine01',Spine01:'Spine',neck:'Head',

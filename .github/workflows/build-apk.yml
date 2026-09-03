@@ -88,6 +88,7 @@ jobs:
           python3 tools/patch_auto_rig_align_v54.py
           python3 tools/patch_anim_lib_smartmap_v56.py
           python3 tools/patch_auto_rig_mode_v57.py
+          python3 tools/patch_anim_lib_groups_v58.py
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html
@@ -127,6 +128,9 @@ jobs:
           grep -q "rebuildRigKeepWeightsV57" app/src/main/assets/auto.html
           ! grep -q "AUTO_RIG_MODE_V57" app/src/main/assets/index.html
           ! grep -q "AUTO_RIG_MODE_V57" app/src/main/assets/create.html
+          grep -q "ANIM_LIB_GROUPS_V58" app/src/main/assets/auto.html
+          ! grep -q "ANIM_LIB_GROUPS_V58" app/src/main/assets/index.html
+          ! grep -q "ANIM_LIB_GROUPS_V58" app/src/main/assets/create.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

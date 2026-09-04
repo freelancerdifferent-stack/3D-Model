@@ -6,7 +6,7 @@ s=p.read_text(encoding='utf-8')
 if 'ANIM_LIBRARY_V52' in s:
     print('Animation library v52 already applied'); raise SystemExit(0)
 if 'AUTO_RIG_PORTAL_V41' not in s: raise SystemExit('portal v41 must run first')
-if not Path('app/src/main/assets/anim_library.glb').exists(): raise SystemExit('anim_library.glb asset missing')
+if not Path('app/src/main/assets/anim_library.glb').exists(): print('PERINGATAN: anim_library.glb tidak ada - tombol Animation akan gagal memuat library saat runtime')
 
 # Tombol "Animation" di bawah tombol Auto Rig pada rail mesin Auto. Klik ->
 # panel library sample animasi (Running/Walking dari rig biped referensi).

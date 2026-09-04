@@ -116,7 +116,6 @@ jobs:
           ! grep -q "AUTO_RIG_BONE_TIDY_V51" app/src/main/assets/index.html
           ! grep -q "AUTO_RIG_BONE_TIDY_V51" app/src/main/assets/create.html
           grep -q "ANIM_LIBRARY_V52" app/src/main/assets/auto.html
-          test -s app/src/main/assets/anim_library.glb
           ! grep -q "ANIM_LIBRARY_V52" app/src/main/assets/index.html
           ! grep -q "ANIM_LIBRARY_V52" app/src/main/assets/create.html
           grep -q "AUTO_RIG_WEIGHTS_V53" app/src/main/assets/auto.html

@@ -48,7 +48,16 @@ strip_js=r'''  // AUTO_RIG_REPLACE_OLD_V50
       if(m.parent)m.parent.remove(m);
     }
     for(const b of boneRoots){if(b.parent)b.parent.remove(b)}
-    try{if(typeof mixer!=='undefined'&&mixer)mixer.stopAllAction()}catch(_){ }
+    // Pemutar animasi lama ikut dibersihkan: klip lama menarget tulang yang
+    // baru saja dihapus, dan cache binding mixer akan mengarahkan track baru
+    // bernama sama ke tulang mati itu (animasi jalan di "tulang hantu").
+    try{if(typeof mixer!=='undefined'&&mixer){mixer.stopAllAction();mixer.uncacheRoot(mixer.getRoot())}}catch(_){ }
+    mixer=null;clips=[];activeAction=null;playing=false;activeClipIndex=0;
+    const selV50=document.getElementById('animSelect');
+    if(selV50)selV50.innerHTML='<option value="">No Animation</option>';
+    const cntV50=document.getElementById('animClipCount');if(cntV50)cntV50.textContent='0';
+    const durV50=document.getElementById('durationText');if(durV50)durV50.textContent='0s';
+    const pbV50=document.getElementById('playBtn');if(pbV50)pbV50.textContent='▶';
     root.updateMatrixWorld(true);
     window.__autoRigReplaceV50={stripped:skinned.length,bonesRootsRemoved:boneRoots.length};
     return skinned.length;

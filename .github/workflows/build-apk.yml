@@ -77,11 +77,24 @@ jobs:
           python3 tools/patch_offline_runtime.py
           python3 tools/patch_mode_storage_split_v40.py
           python3 tools/patch_export_skinned_clone_v44.py
+          python3 tools/patch_fbx_primary_fbxloader_v55.py
           python3 tools/patch_create_machine_v32.py
           python3 tools/patch_auto_machine_v39.py
           python3 tools/patch_auto_rig_portal_v41.py
           python3 tools/patch_auto_rig_replace_old_v50.py
           python3 tools/patch_auto_rig_bone_tidy_v51.py
+          python3 tools/patch_anim_library_v52.py
+          python3 tools/patch_auto_rig_weights_v53.py
+          python3 tools/patch_auto_rig_align_v54.py
+          python3 tools/patch_anim_lib_smartmap_v56.py
+          python3 tools/patch_auto_rig_mode_v57.py
+          python3 tools/patch_anim_lib_groups_v58.py
+          python3 tools/patch_anim_lib_bindpose_v59.py
+          python3 tools/patch_anim_lib_restoffset_v60.py
+          python3 tools/patch_anim_lib_legscopy_v61.py
+          python3 tools/patch_anim_lib_groundface_v62.py
+          python3 tools/patch_anim_lib_armscopy_v63.py
+          python3 tools/patch_animation_machine_v64.py
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html
@@ -103,6 +116,40 @@ jobs:
           grep -q "AUTO_RIG_BONE_TIDY_V51" app/src/main/assets/auto.html
           ! grep -q "AUTO_RIG_BONE_TIDY_V51" app/src/main/assets/index.html
           ! grep -q "AUTO_RIG_BONE_TIDY_V51" app/src/main/assets/create.html
+          grep -q "ANIM_LIBRARY_V52" app/src/main/assets/auto.html
+          ! grep -q "ANIM_LIBRARY_V52" app/src/main/assets/index.html
+          ! grep -q "ANIM_LIBRARY_V52" app/src/main/assets/create.html
+          grep -q "AUTO_RIG_WEIGHTS_V53" app/src/main/assets/auto.html
+          ! grep -q "AUTO_RIG_WEIGHTS_V53" app/src/main/assets/index.html
+          ! grep -q "AUTO_RIG_WEIGHTS_V53" app/src/main/assets/create.html
+          grep -q "AUTO_RIG_ALIGN_V54" app/src/main/assets/auto.html
+          grep -q "mapCoreBonesV54" app/src/main/assets/auto.html
+          ! grep -q "AUTO_RIG_ALIGN_V54" app/src/main/assets/index.html
+          ! grep -q "AUTO_RIG_ALIGN_V54" app/src/main/assets/create.html
+          grep -q "ANIM_LIB_SMARTMAP_V56" app/src/main/assets/auto.html
+          ! grep -q "ANIM_LIB_SMARTMAP_V56" app/src/main/assets/index.html
+          ! grep -q "ANIM_LIB_SMARTMAP_V56" app/src/main/assets/create.html
+          grep -q "AUTO_RIG_MODE_V57" app/src/main/assets/auto.html
+          grep -q "rebuildRigKeepWeightsV57" app/src/main/assets/auto.html
+          ! grep -q "AUTO_RIG_MODE_V57" app/src/main/assets/index.html
+          ! grep -q "AUTO_RIG_MODE_V57" app/src/main/assets/create.html
+          grep -q "ANIM_LIB_GROUPS_V58" app/src/main/assets/auto.html
+          ! grep -q "ANIM_LIB_GROUPS_V58" app/src/main/assets/index.html
+          ! grep -q "ANIM_LIB_GROUPS_V58" app/src/main/assets/create.html
+          grep -q "ANIM_LIB_BINDPOSE_V59" app/src/main/assets/auto.html
+          ! grep -q "ANIM_LIB_BINDPOSE_V59" app/src/main/assets/index.html
+          grep -q "ANIM_LIB_RESTOFFSET_V60" app/src/main/assets/auto.html
+          grep -q "ANIM_LIB_LEGSCOPY_V61" app/src/main/assets/auto.html
+          grep -q "ANIM_LIB_GROUNDFACE_V62" app/src/main/assets/auto.html
+          grep -q "ANIM_LIB_ARMSCOPY_V63" app/src/main/assets/auto.html
+          test -f app/src/main/assets/animation.html
+          grep -q "window.__OBJECT_MACHINE__='animation';" app/src/main/assets/animation.html
+          grep -q "ANIMATION_MACHINE_THEME_V64" app/src/main/assets/animation.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/index.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/create.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/auto.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/animation.html
+          grep -q "window.__OBJECT_STORAGE_PREFIX__='animation:';" app/src/main/assets/animation.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html
@@ -114,6 +161,9 @@ jobs:
           grep -q "EXPORT_SKINNED_CLONE_V44" app/src/main/assets/index.html
           grep -q "EXPORT_SKINNED_CLONE_V44" app/src/main/assets/create.html
           grep -q "EXPORT_SKINNED_CLONE_V44" app/src/main/assets/auto.html
+          grep -q "FBX_PRIMARY_FBXLOADER_V55" app/src/main/assets/index.html
+          grep -q "FBX_PRIMARY_FBXLOADER_V55" app/src/main/assets/create.html
+          grep -q "FBX_PRIMARY_FBXLOADER_V55" app/src/main/assets/auto.html
           ! grep -q "const c=src.clone(true)" app/src/main/assets/index.html
           ! grep -q "const c=src.clone(true)" app/src/main/assets/auto.html
           grep -q "modeStorageSuffixV40" app/src/main/assets/index.html

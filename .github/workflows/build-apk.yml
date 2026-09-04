@@ -94,6 +94,7 @@ jobs:
           python3 tools/patch_anim_lib_legscopy_v61.py
           python3 tools/patch_anim_lib_groundface_v62.py
           python3 tools/patch_anim_lib_armscopy_v63.py
+          python3 tools/patch_animation_machine_v64.py
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html
@@ -141,6 +142,14 @@ jobs:
           grep -q "ANIM_LIB_LEGSCOPY_V61" app/src/main/assets/auto.html
           grep -q "ANIM_LIB_GROUNDFACE_V62" app/src/main/assets/auto.html
           grep -q "ANIM_LIB_ARMSCOPY_V63" app/src/main/assets/auto.html
+          test -f app/src/main/assets/animation.html
+          grep -q "window.__OBJECT_MACHINE__='animation';" app/src/main/assets/animation.html
+          grep -q "ANIMATION_MACHINE_THEME_V64" app/src/main/assets/animation.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/index.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/create.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/auto.html
+          grep -q "objectPortalAnimV64" app/src/main/assets/animation.html
+          grep -q "window.__OBJECT_STORAGE_PREFIX__='animation:';" app/src/main/assets/animation.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

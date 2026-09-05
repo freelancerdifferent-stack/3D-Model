@@ -96,6 +96,7 @@ jobs:
           python3 tools/patch_anim_lib_armscopy_v63.py
           python3 tools/patch_animation_machine_v64.py
           python3 tools/patch_animation_fbx_upright_v65.py
+          python3 tools/patch_anim_autorig_css_v66.py
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html
@@ -155,6 +156,13 @@ jobs:
           ! grep -q "ANIMATION_FBX_UPRIGHT_V65" app/src/main/assets/auto.html
           ! grep -q "ANIMATION_FBX_UPRIGHT_V65" app/src/main/assets/index.html
           ! grep -q "ANIMATION_FBX_UPRIGHT_V65" app/src/main/assets/create.html
+          grep -q "ANIM_AUTORIG_CSS_V66" app/src/main/assets/animation.html
+          grep -q 'html\[data-object-machine="animation"\] body.auto-rig-v42 #editorScreen .toolrail' app/src/main/assets/animation.html
+          grep -q 'html\[data-object-machine="animation"\] body.auto-rig-v42 #editorScreen .viewtools' app/src/main/assets/animation.html
+          grep -q 'html\[data-object-machine="animation"\] #editorScreen .auto-rig-portal-v41' app/src/main/assets/animation.html
+          ! grep -q "ANIM_AUTORIG_CSS_V66" app/src/main/assets/auto.html
+          ! grep -q "ANIM_AUTORIG_CSS_V66" app/src/main/assets/index.html
+          ! grep -q "ANIM_AUTORIG_CSS_V66" app/src/main/assets/create.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

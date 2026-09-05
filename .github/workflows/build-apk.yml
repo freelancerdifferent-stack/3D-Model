@@ -104,6 +104,8 @@ jobs:
           python3 tools/patch_finger_detect_fix_v73.py
           python3 tools/patch_finger_weights_v74.py
           python3 tools/patch_remove_anim_library_v75.py
+          python3 tools/patch_upright_bake_clips_v76.py
+          python3 tools/patch_bind_upright_v77.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -201,7 +203,6 @@ jobs:
           grep -q "specs.hips=makeBone('Hips'" app/src/main/assets/auto.html
           ! grep -q "refRolesV70" app/src/main/assets/auto.html
           grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/animation.html
-          grep -q "bakeDownV71" app/src/main/assets/animation.html
           ! grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/auto.html
           ! grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/index.html
           ! grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/create.html
@@ -222,6 +223,21 @@ jobs:
           ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/index.html
           ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/create.html
           grep -q "REMOVE_ANIM_LIBRARY_V75" app/src/main/assets/animation.html
+          grep -q "UPRIGHT_BAKE_CLIPS_V76" app/src/main/assets/animation.html
+          grep -q "panggangTrackV76" app/src/main/assets/animation.html
+          ! grep -q "bakeDownV71" app/src/main/assets/animation.html
+          ! grep -q "UPRIGHT_BAKE_CLIPS_V76" app/src/main/assets/auto.html
+          ! grep -q "UPRIGHT_BAKE_CLIPS_V76" app/src/main/assets/index.html
+          ! grep -q "UPRIGHT_BAKE_CLIPS_V76" app/src/main/assets/create.html
+          grep -q "BIND_UPRIGHT_V77" app/src/main/assets/animation.html
+          grep -q "geserBalikV77" app/src/main/assets/animation.html
+          ! grep -q "skelsV71" app/src/main/assets/animation.html
+          sed -n '/async function fbxAxisUprightV65/,/ANIMATION_FBX_UPRIGHT_V65: koreksi sumbu diterapkan/p' app/src/main/assets/animation.html > /tmp/upright_v77.txt
+          test -s /tmp/upright_v77.txt
+          ! grep -q "calculateInverses" /tmp/upright_v77.txt
+          ! grep -q "BIND_UPRIGHT_V77" app/src/main/assets/auto.html
+          ! grep -q "BIND_UPRIGHT_V77" app/src/main/assets/index.html
+          ! grep -q "BIND_UPRIGHT_V77" app/src/main/assets/create.html
           ! grep -q "anim-lib-" app/src/main/assets/animation.html
           ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
           ! grep -q "anim_library.glb" app/src/main/assets/animation.html

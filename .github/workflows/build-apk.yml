@@ -99,6 +99,15 @@ jobs:
           python3 tools/patch_anim_autorig_css_v66.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
+      - name: Mesin ekstrak struktur bone
+        run: |
+          node tools/bone_extract_machine_v68.mjs --modules=/tmp/df3d-runtime/node_modules
+          if ls asset/fbx-loader/*.fbx asset/fbx-loader/*.FBX >/dev/null 2>&1; then
+            test -s app/src/main/assets/rig_reference.json
+            grep -q "RIG_REFERENCE_V68" app/src/main/assets/rig_reference.json
+          else
+            echo "asset/fbx-loader kosong - rig_reference.json tidak dibuat"
+          fi
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html

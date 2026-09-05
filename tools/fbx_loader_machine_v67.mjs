@@ -154,7 +154,8 @@ export async function createLoaderMachine() {
     await fbxAxisUprightV65(file, obj);
     const uprighted = !before.equals(obj.quaternion);
     obj.updateMatrixWorld(true);
-    return { object: obj, via, uprighted, name };
+    const clipCount = (obj.animations || []).length;
+    return { object: obj, via, uprighted, name, clipCount };
   }
 
   return { load, THREE };

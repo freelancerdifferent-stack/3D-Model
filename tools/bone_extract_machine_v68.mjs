@@ -24,26 +24,26 @@
 // Tugasnya hanya menyalin struktur apa adanya menjadi data.
 
 // ---------------------------------------------------------------------------
-// BELUM SELESAI - MASALAH BIND POSE (terbukti lewat pengujian, bukan dugaan)
+// SYARAT FILE SUMBER: FBX POSE MURNI (BIND POSE), TANPA ANIMASI
 //
-// Mesin ini BELUM didaftarkan ke workflow, jadi belum memengaruhi build.
+// FBX animasi menyimpan transform lokal tulang pada pose take-nya, bukan pose
+// rest. Diuji pada Anim_Warrior_Walk.FBX: hasilnya pose melangkah, kiri/kanan
+// tidak simetris (thigh_l x=8.22 vs thigh_r x=-9.61).
 //
-// 1. FBX animasi menyimpan transform lokal tulang pada pose take-nya, bukan
-//    pose rest. Pada Anim_Warrior_Walk.FBX itu terlihat dari asimetri
-//    kiri/kanan: thigh_l x=8.22 vs thigh_r x=-9.61; clavicle_l x=3.47 vs
-//    clavicle_r x=-3.81. Struktur yang keluar sekarang = pose berjalan.
+// skeleton.pose() TIDAK bisa dipakai untuk menambal itu di sini: model ini
+// punya 17 skeleton dan prepFbxV55 sudah melebur tulang per nama, sehingga
+// pose() tiap skeleton menimpa tulang kanonis yang sama dengan boneInverses
+// milik salinan lain. Hasilnya rusak - tulang melompat dari rentang Y
+// 3.7..157.4 menjadi -189.6..96.8.
 //
-// 2. skeleton.pose() TIDAK bisa dipakai untuk memperbaikinya di sini. Model ini
-//    punya 17 skeleton dan prepFbxV55 sudah melebur tulang per nama, sehingga
-//    pose() dari tiap skeleton menimpa tulang kanonis yang sama dengan
-//    boneInverses milik salinan lain. Hasilnya rusak: tulang melompat dari
-//    rentang Y 3.7..157.4 menjadi -189.6..96.8.
+// Jalan keluarnya bukan menambal kode, melainkan memakai file yang benar:
+// SK_Mannequin.FBX (mesh murni tanpa animasi). Hasilnya 27 pasang kiri/kanan
+// simetris dengan simpangan terbesar 0.00001 - sebatas pembulatan desimal.
 //
-// 3. Arah yang menjanjikan: bind pose dihitung dari inverse(boneInverse).
-//    Hasilnya simetris sempurna - thigh_l/r x=+-9.01, clavicle_l/r x=+-3.78,
-//    hand_l/r x=+-56.65. TAPI rentang Y-nya hanya -9.6..11.9 (model tinggi
-//    173.8) dan hanya mencakup 60 dari 61 tulang. Dugaan sementara: ruang
-//    koordinat bindMatrix. Belum dipastikan, jadi belum dipakai.
+// Karena itu mesin membaca transform apa adanya, DAN memeriksa dua hal supaya
+// file sumber yang keliru ketahuan, bukan lolos diam-diam:
+//   - sumber memuat klip animasi  -> peringatan
+//   - simetri kiri/kanan meleset  -> peringatan disertai angkanya
 // ---------------------------------------------------------------------------
 
 import fs from 'node:fs';
@@ -59,8 +59,7 @@ const r3 = n => Math.round(n * 1e3) / 1e3;
 const r5 = n => Math.round(n * 1e5) / 1e5;
 
 export function extractBoneStructure(object, THREE, meta = {}) {
-  // BELUM SELESAI - lihat catatan "BIND POSE" di kepala berkas.
-  // Untuk sekarang transform dibaca APA ADANYA dari file.
+  // Transform dibaca apa adanya; sumber wajib pose murni (lihat kepala berkas).
   object.updateMatrixWorld(true);
 
   const all = [];
@@ -110,6 +109,27 @@ export function extractBoneStructure(object, THREE, meta = {}) {
   const dupNames = names.filter((n, i) => names.indexOf(n) !== i);
   if (dupNames.length) throw new Error('nama tulang kembar setelah peleburan: ' + [...new Set(dupNames)].join(', '));
 
+  // Periksa simetri kiri/kanan. Rig humanoid dalam bind pose seharusnya
+  // bercermin pada sumbu X. Simpangan besar = sumbernya bukan pose murni.
+  const byName = new Map(rows.map(r => [r.name, r]));
+  let pairs = 0, worst = 0, worstName = null;
+  for (const r of rows) {
+    if (!r.name.endsWith('_l')) continue;
+    const mate = byName.get(r.name.slice(0, -2) + '_r');
+    if (!mate) continue;
+    pairs++;
+    const e = Math.max(
+      Math.abs(r.unit[0] + mate.unit[0]),
+      Math.abs(r.unit[1] - mate.unit[1]),
+      Math.abs(r.unit[2] - mate.unit[2]));
+    if (e > worst) { worst = e; worstName = r.name; }
+  }
+  const symmetry = { pairs, worst: r5(worst), worstBone: worstName };
+  if (pairs && worst > 0.01)
+    console.warn(`  PERINGATAN: simetri kiri/kanan meleset ${worst.toFixed(4)} pada ${worstName} - sumber kemungkinan bukan pose murni.`);
+  if (meta.clipCount)
+    console.warn(`  PERINGATAN: sumber memuat ${meta.clipCount} klip animasi - pose tulang mungkin bukan bind pose.`);
+
   return {
     marker: 'RIG_REFERENCE_V68',
     source: meta.name || null,
@@ -119,6 +139,7 @@ export function extractBoneStructure(object, THREE, meta = {}) {
     skippedDuplicates: dupCount,
     roots,
     height: r3(height),
+    symmetry,
     size: [r3(size.x), r3(size.y), r3(size.z)],
     bones: rows,
   };
@@ -145,6 +166,7 @@ async function main() {
   console.log(`  tulang        : ${data.boneCount}${data.skippedDuplicates ? ` (${data.skippedDuplicates} duplikat __dupV55 dilewati)` : ''}`);
   console.log(`  akar          : ${data.roots.join(', ')}`);
   console.log(`  tinggi        : ${data.height}`);
+  console.log(`  simetri       : ${data.symmetry.pairs} pasang, simpangan terbesar ${data.symmetry.worst}`);
   console.log(`  ditulis ke    : ${path.relative(REPO, OUT)} (${fs.statSync(OUT).size} byte)`);
 }
 

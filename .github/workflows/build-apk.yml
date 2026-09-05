@@ -97,6 +97,7 @@ jobs:
           python3 tools/patch_animation_machine_v64.py
           python3 tools/patch_animation_fbx_upright_v65.py
           python3 tools/patch_anim_autorig_css_v66.py
+          python3 tools/patch_autorig_marker_modes_v69.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -174,6 +175,15 @@ jobs:
           ! grep -q "ANIM_AUTORIG_CSS_V66" app/src/main/assets/auto.html
           ! grep -q "ANIM_AUTORIG_CSS_V66" app/src/main/assets/index.html
           ! grep -q "ANIM_AUTORIG_CSS_V66" app/src/main/assets/create.html
+          grep -q "AUTO_RIG_MARKER_MODES_V69" app/src/main/assets/animation.html
+          grep -q "MK_FINGERS_V69" app/src/main/assets/animation.html
+          grep -q "markerModeV69" app/src/main/assets/animation.html
+          grep -q "headTop" app/src/main/assets/animation.html
+          ! grep -q "const markerDefs=" app/src/main/assets/animation.html
+          ! grep -q "AUTO_RIG_MARKER_MODES_V69" app/src/main/assets/auto.html
+          ! grep -q "AUTO_RIG_MARKER_MODES_V69" app/src/main/assets/index.html
+          ! grep -q "AUTO_RIG_MARKER_MODES_V69" app/src/main/assets/create.html
+          grep -q "const markerDefs=" app/src/main/assets/auto.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

@@ -106,16 +106,27 @@ jobs:
           python3 tools/patch_remove_anim_library_v75.py
           python3 tools/patch_upright_bake_clips_v76.py
           python3 tools/patch_bind_upright_v77.py
+          python3 tools/patch_anim_portal_v79.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
         run: |
           node tools/bone_extract_machine_v68.mjs --modules=/tmp/df3d-runtime/node_modules
-          if ls asset/fbx-loader/*.fbx asset/fbx-loader/*.FBX >/dev/null 2>&1; then
+          if find asset/fbx-loader -maxdepth 1 -iname '*.fbx' | grep -q .; then
             test -s app/src/main/assets/rig_reference.json
             grep -q "RIG_REFERENCE_V68" app/src/main/assets/rig_reference.json
           else
             echo "asset/fbx-loader kosong - rig_reference.json tidak dibuat"
+          fi
+      - name: Mesin library animasi
+        run: |
+          node tools/anim_library_machine_v78.mjs --modules=/tmp/df3d-runtime/node_modules
+          test -s app/src/main/assets/anim_library.json
+          grep -q "ANIM_LIBRARY_V78" app/src/main/assets/anim_library.json
+          if find asset/anim-library -maxdepth 1 -iname '*.fbx' | grep -q .; then
+            python3 -c "import json,sys; d=json.load(open('app/src/main/assets/anim_library.json')); sys.exit(0 if d['clips'] else 'anim-library berisi FBX tetapi tidak satu pun klip terekstrak')"
+          else
+            echo "asset/anim-library kosong - library ditulis tanpa klip"
           fi
       - name: Verify isolated machines and split storage
         run: |
@@ -238,6 +249,12 @@ jobs:
           ! grep -q "BIND_UPRIGHT_V77" app/src/main/assets/auto.html
           ! grep -q "BIND_UPRIGHT_V77" app/src/main/assets/index.html
           ! grep -q "BIND_UPRIGHT_V77" app/src/main/assets/create.html
+          grep -q "ANIM_PORTAL_V79" app/src/main/assets/animation.html
+          grep -q "animPortalV79" app/src/main/assets/animation.html
+          grep -q "retargetV79" app/src/main/assets/animation.html
+          ! grep -q "ANIM_PORTAL_V79" app/src/main/assets/auto.html
+          ! grep -q "ANIM_PORTAL_V79" app/src/main/assets/index.html
+          ! grep -q "ANIM_PORTAL_V79" app/src/main/assets/create.html
           ! grep -q "anim-lib-" app/src/main/assets/animation.html
           ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
           ! grep -q "anim_library.glb" app/src/main/assets/animation.html

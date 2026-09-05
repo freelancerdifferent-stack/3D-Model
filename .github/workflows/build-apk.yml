@@ -102,6 +102,7 @@ jobs:
           python3 tools/patch_fbx_upright_bake_v71.py
           python3 tools/patch_marker_autodetect_v72.py
           python3 tools/patch_finger_detect_fix_v73.py
+          python3 tools/patch_finger_weights_v74.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -215,6 +216,10 @@ jobs:
           ! grep -q "FINGER_DETECT_FIX_V73" app/src/main/assets/auto.html
           ! grep -q "FINGER_DETECT_FIX_V73" app/src/main/assets/index.html
           ! grep -q "FINGER_DETECT_FIX_V73" app/src/main/assets/create.html
+          grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/animation.html
+          ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/auto.html
+          ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/index.html
+          ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/create.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

@@ -99,6 +99,7 @@ jobs:
           python3 tools/patch_anim_autorig_css_v66.py
           python3 tools/patch_autorig_marker_modes_v69.py
           python3 tools/patch_autorig_reference_skeleton_v70.py
+          python3 tools/patch_fbx_upright_bake_v71.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -195,6 +196,11 @@ jobs:
           ! grep -q "AUTO_RIG_REFERENCE_SKELETON_V70" app/src/main/assets/auto.html
           grep -q "specs.hips=makeBone('Hips'" app/src/main/assets/auto.html
           ! grep -q "refRolesV70" app/src/main/assets/auto.html
+          grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/animation.html
+          grep -q "bakeDownV71" app/src/main/assets/animation.html
+          ! grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/auto.html
+          ! grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/index.html
+          ! grep -q "FBX_UPRIGHT_BAKE_V71" app/src/main/assets/create.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

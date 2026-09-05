@@ -98,6 +98,7 @@ jobs:
           python3 tools/patch_animation_fbx_upright_v65.py
           python3 tools/patch_anim_autorig_css_v66.py
           python3 tools/patch_autorig_marker_modes_v69.py
+          python3 tools/patch_autorig_reference_skeleton_v70.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -184,6 +185,15 @@ jobs:
           ! grep -q "AUTO_RIG_MARKER_MODES_V69" app/src/main/assets/index.html
           ! grep -q "AUTO_RIG_MARKER_MODES_V69" app/src/main/assets/create.html
           grep -q "const markerDefs=" app/src/main/assets/auto.html
+          grep -q "AUTO_RIG_REFERENCE_SKELETON_V70" app/src/main/assets/animation.html
+          grep -q "loadRigReferenceV70" app/src/main/assets/animation.html
+          grep -q "ANCHOR_V70" app/src/main/assets/animation.html
+          ! grep -q "specs.hips=makeBone('Hips'" app/src/main/assets/animation.html
+          grep -q "refRolesV70" app/src/main/assets/animation.html
+          ! grep -q "LeftUpLeg',calf:'LeftLeg'" app/src/main/assets/animation.html
+          ! grep -q "AUTO_RIG_REFERENCE_SKELETON_V70" app/src/main/assets/auto.html
+          grep -q "specs.hips=makeBone('Hips'" app/src/main/assets/auto.html
+          ! grep -q "refRolesV70" app/src/main/assets/auto.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

@@ -187,7 +187,8 @@ jobs:
           grep -q "const markerDefs=" app/src/main/assets/auto.html
           grep -q "AUTO_RIG_REFERENCE_SKELETON_V70" app/src/main/assets/animation.html
           grep -q "loadRigReferenceV70" app/src/main/assets/animation.html
-          grep -q "ANCHOR_V70" app/src/main/assets/animation.html
+          grep -q "ANCHOR_PAIRS_V70" app/src/main/assets/animation.html
+          grep -q "buildAnchorMapV70" app/src/main/assets/animation.html
           ! grep -q "specs.hips=makeBone('Hips'" app/src/main/assets/animation.html
           grep -q "refRolesV70" app/src/main/assets/animation.html
           ! grep -q "LeftUpLeg',calf:'LeftLeg'" app/src/main/assets/animation.html

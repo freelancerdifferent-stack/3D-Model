@@ -127,28 +127,51 @@ new = r'''  // AUTO_RIG_REFERENCE_SKELETON_V70
     rolesMemoV70=out;return out;
   }
 
-  // Padanan tulang acuan -> kunci marker. Nama tulang mengikuti isi acuan.
-  const ANCHOR_V70={
-    pelvis:'groin', head:'chin',
-    upperarm_l:'shoulderL', upperarm_r:'shoulderR',
-    lowerarm_l:'elbowL',    lowerarm_r:'elbowR',
-    hand_l:'wristL',        hand_r:'wristR',
-    calf_l:'kneeL',         calf_r:'kneeR',
-    foot_l:'ankleL',        foot_r:'ankleR',
-    ball_l:'toeL',          ball_r:'toeR',
-  };
-  function markerKeyForBoneV70(name){
-    if(ANCHOR_V70[name])return ANCHOR_V70[name];
-    const m=/^(thumb|index|middle|ring|pinky)_(\d{2})_([lr])$/.exec(name);
-    if(!m)return null;
-    // initMarkers selalu menyiapkan 45 kunci marker, termasuk jari, supaya
-    // pengguna bisa berpindah mode tanpa kehilangan posisi. Tapi di mode Cepat
-    // marker jari TIDAK PERNAH ditampilkan sehingga isinya masih tebakan kipas
-    // bawaan. Memakainya sebagai jangkar berarti memaku jari ke tebakan itu,
-    // padahal acuan FBX tahu anatomi jari sebenarnya. Jadi jari hanya jadi
-    // jangkar kalau pengguna memang memakai mode per sendi jari.
-    if(S.markerModeV69!=='jari')return null;
-    return m[1]+m[2]+m[3].toUpperCase();
+  // Padanan tulang acuan -> marker, ditulis sebagai PASANGAN SISI, bukan nama
+  // mati. Sisi mana yang dipakai ditentukan dari geometri, karena kedua sistem
+  // tidak sepakat soal arti "kiri": acuan UE4 memakai kiri ANATOMIS (tulang _l
+  // ada di +X, mis. hand_l unit x = +0.292), sedangkan marker aplikasi memakai
+  // kiri dari SUDUT PANDANG PENONTON (wristL bawaan ada di -X). Memasangkan
+  // lewat huruf L/R begitu saja membuat tulang kiri menempel di sisi kanan
+  // model - rig tercermin. Yang menentukan adalah letak sebenarnya, sehingga
+  // acuan dengan konvensi mana pun tetap mendarat di sisi yang benar, termasuk
+  // kalau pengguna menggeser marker melewati garis tengah.
+  const ANCHOR_SOLO_V70={pelvis:'groin', head:'chin'};
+  const ANCHOR_PAIRS_V70=[
+    ['upperarm_l','upperarm_r','shoulder'],
+    ['lowerarm_l','lowerarm_r','elbow'],
+    ['hand_l','hand_r','wrist'],
+    ['calf_l','calf_r','knee'],
+    ['foot_l','foot_r','ankle'],
+    ['ball_l','ball_r','toe'],
+  ];
+  function fingerPairsV70(refBones){
+    const out=[];
+    for(const b of refBones){
+      const m=/^(thumb|index|middle|ring|pinky)_(\d{2})_l$/.exec(b.name);
+      if(m)out.push([m[0], m[1]+'_'+m[2]+'_r', m[1]+m[2]]);
+    }
+    return out;
+  }
+  // Peta jangkar dibangun ulang tiap kali skeleton dibuat, karena posisi marker
+  // bisa berubah di antara dua percobaan.
+  function buildAnchorMapV70(ref,refPos){
+    const map={};
+    for(const bn in ANCHOR_SOLO_V70){
+      if(refPos[bn]&&S.markers[ANCHOR_SOLO_V70[bn]])map[bn]=ANCHOR_SOLO_V70[bn];
+    }
+    const pairs=ANCHOR_PAIRS_V70.concat(
+      S.markerModeV69==='jari' ? fingerPairsV70(ref.bones) : []);
+    for(const [bL,bR,base] of pairs){
+      const mL=S.markers[base+'L'], mR=S.markers[base+'R'];
+      if(!refPos[bL]||!refPos[bR]||!mL||!mR)continue;
+      const dBone=refPos[bL].x-refPos[bR].x;              // + bila _l di sisi X positif
+      const dMk=(mL.x-S.center.x)-(mR.x-S.center.x);      // + bila markerL di sisi X positif
+      const searah=(Math.abs(dBone)<1e-9||Math.abs(dMk)<1e-9)?1:Math.sign(dBone*dMk);
+      map[bL]=searah>=0?base+'L':base+'R';
+      map[bR]=searah>=0?base+'R':base+'L';
+    }
+    return map;
   }
 
   function generateSkeleton(){
@@ -164,9 +187,10 @@ new = r'''  // AUTO_RIG_REFERENCE_SKELETON_V70
 
     // Jangkar: tulang acuan yang punya marker terpasang. Marker jari hanya ada
     // di mode "jari"; kalau tidak ada, tulang itu bukan jangkar.
+    const anchorMap=buildAnchorMapV70(ref,refPos);
     const anchor={};
     for(const r of rows){
-      const key=markerKeyForBoneV70(r.name);
+      const key=anchorMap[r.name];
       if(key&&S.markers[key])anchor[r.name]=S.markers[key].clone();
     }
     if(!Object.keys(anchor).length)throw new Error('Tidak ada marker yang cocok dengan struktur acuan.');

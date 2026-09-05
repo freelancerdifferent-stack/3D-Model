@@ -103,6 +103,7 @@ jobs:
           python3 tools/patch_marker_autodetect_v72.py
           python3 tools/patch_finger_detect_fix_v73.py
           python3 tools/patch_finger_weights_v74.py
+          python3 tools/patch_remove_anim_library_v75.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -220,6 +221,14 @@ jobs:
           ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/auto.html
           ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/index.html
           ! grep -q "FINGER_WEIGHTS_V74" app/src/main/assets/create.html
+          grep -q "REMOVE_ANIM_LIBRARY_V75" app/src/main/assets/animation.html
+          ! grep -q "anim-lib-" app/src/main/assets/animation.html
+          ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
+          ! grep -q "anim_library.glb" app/src/main/assets/animation.html
+          ! grep -q "retargetClip" app/src/main/assets/animation.html
+          grep -q "ANIM_LIBRARY_V52" app/src/main/assets/auto.html
+          grep -q "animLibBtnV52" app/src/main/assets/auto.html
+          grep -q "retargetClip" app/src/main/assets/auto.html
           grep -q "EDIT_MACHINE_V32" app/src/main/assets/index.html
           grep -q "CREATE_MACHINE_V32" app/src/main/assets/create.html
           grep -q "objectPortalAutoV39" app/src/main/assets/index.html

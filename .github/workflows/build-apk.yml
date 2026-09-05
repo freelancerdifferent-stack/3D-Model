@@ -97,6 +97,8 @@ jobs:
           python3 tools/patch_animation_machine_v64.py
           python3 tools/patch_animation_fbx_upright_v65.py
           python3 tools/patch_anim_autorig_css_v66.py
+      - name: Mesin loader FBX
+        run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Verify isolated machines and split storage
         run: |
           test -f app/src/main/assets/index.html

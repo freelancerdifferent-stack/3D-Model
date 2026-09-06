@@ -108,6 +108,7 @@ jobs:
           python3 tools/patch_bind_upright_v77.py
           python3 tools/patch_anim_portal_v79.py
           python3 tools/patch_anim_chain_retarget_v80.py
+          python3 tools/patch_export_anim_only_v81.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -261,6 +262,13 @@ jobs:
           ! grep -q "ANIM_CHAIN_RETARGET_V80" app/src/main/assets/auto.html
           ! grep -q "ANIM_CHAIN_RETARGET_V80" app/src/main/assets/index.html
           ! grep -q "ANIM_CHAIN_RETARGET_V80" app/src/main/assets/create.html
+          grep -q "EXPORT_ANIM_ONLY_V81" app/src/main/assets/animation.html
+          grep -q "exportAnimOnlyV81" app/src/main/assets/animation.html
+          grep -q "susunKerangkaV81" app/src/main/assets/animation.html
+          grep -q "EXPORT_ALL_V13" app/src/main/assets/animation.html
+          ! grep -q "EXPORT_ANIM_ONLY_V81" app/src/main/assets/auto.html
+          ! grep -q "EXPORT_ANIM_ONLY_V81" app/src/main/assets/index.html
+          ! grep -q "EXPORT_ANIM_ONLY_V81" app/src/main/assets/create.html
           ! grep -q "anim-lib-" app/src/main/assets/animation.html
           ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
           ! grep -q "anim_library.glb" app/src/main/assets/animation.html

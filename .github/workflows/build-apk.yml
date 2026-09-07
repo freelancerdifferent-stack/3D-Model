@@ -113,6 +113,7 @@ jobs:
           python3 tools/patch_rig_prop_nojump_v83.py
           python3 tools/patch_rig_mesh_list_v84.py
           python3 tools/patch_rig_bonetexture_v85.py
+          python3 tools/patch_rig_all_v86.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -294,6 +295,13 @@ jobs:
           ! grep -q "RIG_BONETEXTURE_V85" app/src/main/assets/auto.html
           ! grep -q "RIG_BONETEXTURE_V85" app/src/main/assets/index.html
           ! grep -q "RIG_BONETEXTURE_V85" app/src/main/assets/create.html
+          grep -q "RIG_ALL_V86" app/src/main/assets/animation.html
+          grep -q 'id="rigAllV86"' app/src/main/assets/animation.html
+          grep -q "semuaRigV86" app/src/main/assets/animation.html
+          grep -q "pohonModelV86" app/src/main/assets/animation.html
+          ! grep -q "RIG_ALL_V86" app/src/main/assets/auto.html
+          ! grep -q "RIG_ALL_V86" app/src/main/assets/index.html
+          ! grep -q "RIG_ALL_V86" app/src/main/assets/create.html
           ! grep -q "anim-lib-" app/src/main/assets/animation.html
           ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
           ! grep -q "anim_library.glb" app/src/main/assets/animation.html

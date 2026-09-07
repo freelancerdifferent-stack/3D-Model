@@ -27,9 +27,9 @@
 # dan pengguna yang menentukan kapan penyambungan terjadi.
 #
 # Cara kerjanya:
-#   1. Rangka model ditentukan dari pohon tulang yang dipakai PALING BANYAK
-#      mesh. Bukan yang tulangnya terbanyak - BRA justru punya 145 tulang
-#      sedangkan pohon model hanya 129, jadi "terbanyak" akan salah pilih.
+#   1. Rangka model = milik mesh ber-skin pertama yang ditemukan. Add Mesh
+#      selalu menempel sebagai anak terakhir, jadi yang datang lebih dulu -
+#      model yang diimpor - selalu tersentuh lebih dahulu.
 #   2. Tiap mesh yang memakai pohon lain dipetakan per nama ke tulang model.
 #   3. PAGAR: hanya dilebur bila rest pose kedua pohon berimpit dalam batas
 #      epsilon (2% ukuran model), dan hanya tulang yang berbobot yang
@@ -91,20 +91,32 @@ js = r""" // RIG_ALL_V86 - sambungkan semua mesh sekaligus ke rangka model.
    });
    return kel.size?kel:null;
  }
- /** Pohon tulang milik model = yang dipakai PALING BANYAK mesh. Bukan yang
-  *  tulangnya terbanyak: berkas per-bagian bisa membawa pohon yang lebih besar
-  *  daripada milik model (BRA 145 tulang, model 129), sehingga ukuran akan
-  *  memilih yang salah. Jumlah pemakai membedakannya dengan tegas - pohon model
-  *  dipakai 8 mesh, pohon bawaan berkas tambahan hanya 1. */
- function pohonModelV86(kel){
-   let pilih=null,jml=-1,tulang=-1;
-   for(const [akar,mesh] of kel){
-     let n=0;akar.traverse(x=>{if(x.isBone)n++});
-     if(mesh.length>jml||(mesh.length===jml&&n>tulang)){pilih=akar;jml=mesh.length;tulang=n}
-   }
-   if(!pilih)return null;
-   const peta=new Map();pilih.traverse(x=>{if(x.isBone&&!peta.has(x.name))peta.set(x.name,x)});
-   return {akar:pilih,peta};
+ /** Pohon tulang milik model = milik mesh ber-skin PERTAMA yang ditemukan saat
+  *  menelusuri model dari akarnya.
+  *
+  *  Bukan "yang dipakai paling banyak mesh": aturan itu terbalik begitu berkas
+  *  tambahan membawa lebih banyak mesh daripada modelnya. Terukur - nude 8 mesh
+  *  ditambah AllPartsTogether 41 mesh menghasilkan kelompok [8, 41], dan
+  *  jumlah terbanyak memilih pohon berkas tambahan, sehingga MODEL yang
+  *  dipindahkan ke rangka pendatang. Terbalik sama sekali.
+  *
+  *  Bukan pula "yang tulangnya terbanyak": berkas per-bagian bisa membawa pohon
+  *  lebih besar daripada milik model (BRA 145 tulang, model 129).
+  *
+  *  Urutan penelusuran menjawabnya tanpa menghitung apa pun. Add Mesh
+  *  menempelkan objeknya sebagai anak TERAKHIR dari akar model, jadi apa pun
+  *  yang datang lebih dulu - yaitu model yang diimpor - selalu tersentuh lebih
+  *  dahulu. Yang pertama ditemukan adalah tuan rumah. */
+ function pohonModelV86(){
+   const r=activeModelRoot();if(!r)return null;
+   let pertama=null;
+   r.traverse(o=>{ if(pertama)return;
+     if(o.isSkinnedMesh&&o.skeleton&&o.skeleton.bones.length)pertama=o; });
+   if(!pertama)return null;
+   const akar=akarTulangV86(pertama.skeleton.bones[0]);
+   if(!akar)return null;
+   const peta=new Map();akar.traverse(x=>{if(x.isBone&&!peta.has(x.name))peta.set(x.name,x)});
+   return {akar,peta};
  }
  /** Indeks tulang yang benar-benar berbobot pada sebuah mesh. Mengembalikan
   *  null bila mesh tidak punya atribut skin, supaya pemanggil memeriksa semua
@@ -131,7 +143,7 @@ js = r""" // RIG_ALL_V86 - sambungkan semua mesh sekaligus ke rangka model.
    if(!skeletonRigModeV26)return;
    const kel=kelompokRangkaV86();
    if(!kel){msg('Model belum punya mesh ber-skin');return}
-   const model=pohonModelV86(kel);
+   const model=pohonModelV86();
    if(!model){msg('Rangka model tidak ditemukan');return}
    const eps=batasImpitV86(),pa=new THREE.Vector3(),pb=new THREE.Vector3();
    let disambung=0,dilewatiNama=0,dilewatiPose=0,sudahBenar=0,pesanPose='';

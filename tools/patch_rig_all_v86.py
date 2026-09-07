@@ -118,6 +118,25 @@ js = r""" // RIG_ALL_V86 - sambungkan semua mesh sekaligus ke rangka model.
    const peta=new Map();akar.traverse(x=>{if(x.isBone&&!peta.has(x.name))peta.set(x.name,x)});
    return {akar,peta};
  }
+ /** Cari tulang model yang sepadan dengan sebuah nama.
+  *
+  *  Cocok persis lebih dulu. Kalau gagal, akhiran angka hasil penomoran ulang
+  *  pemuat dilepas lalu dicoba sekali lagi: GLTFLoader menambahkan '_1', '_2'
+  *  dan seterusnya ketika satu berkas memuat beberapa node bernama sama, dan
+  *  berkas per-bagian memang membawa banyak salinan pohon tulang. Terukur pada
+  *  Mesh.glb (23 mesh, 23 salinan rangka): seluruh 23 mesh ditolak karena nama
+  *  seperti 'spine_01_1', 'thigh_r_1', 'upperarm_l_1' - salinan dari
+  *  'spine_01', 'thigh_r', 'upperarm_l' yang sebenarnya ada di model.
+  *
+  *  Pelepasan akhiran hanya dicoba SESUDAH pencocokan persis gagal, sehingga
+  *  tulang yang memang bernama berakhiran angka tetap menemukan dirinya
+  *  sendiri lebih dulu dan tidak pernah tertukar. */
+ function cariTulangV86(peta,nama){
+   const tepat=peta.get(nama);
+   if(tepat)return tepat;
+   const dasar=nama.replace(/_\d+$/,'');
+   return dasar!==nama?peta.get(dasar):undefined;
+ }
  /** Indeks tulang yang benar-benar berbobot pada sebuah mesh. Mengembalikan
   *  null bila mesh tidak punya atribut skin, supaya pemanggil memeriksa semua
   *  tulang alih-alih menganggap tak ada yang dipakai. */
@@ -146,13 +165,21 @@ js = r""" // RIG_ALL_V86 - sambungkan semua mesh sekaligus ke rangka model.
    const model=pohonModelV86();
    if(!model){msg('Rangka model tidak ditemukan');return}
    const eps=batasImpitV86(),pa=new THREE.Vector3(),pb=new THREE.Vector3();
-   let disambung=0,dilewatiNama=0,dilewatiPose=0,sudahBenar=0,pesanPose='';
+   let disambung=0,dilewatiNama=0,dilewatiPose=0,sudahBenar=0,pesanPose='',pesanNama='';
    for(const [akar,daftar] of kel){
      if(akar===model.akar){sudahBenar+=daftar.length;continue}
      for(const m of daftar){
-       const bs=m.skeleton.bones,kanon=[];let lengkap=true;
-       for(const b of bs){const c=model.peta.get(b.name);if(!c){lengkap=false;break}kanon.push(c)}
-       if(!lengkap){dilewatiNama++;continue}
+       const bs=m.skeleton.bones,kanon=[];let lengkap=true,tidakKetemu='';
+       for(const b of bs){
+         const c=cariTulangV86(model.peta,b.name);
+         if(!c){lengkap=false;tidakKetemu=b.name;break}
+         kanon.push(c);
+       }
+       if(!lengkap){
+         dilewatiNama++;
+         if(!pesanNama)pesanNama='tulang "'+tidakKetemu+'" tidak ada di model';
+         continue;
+       }
        // Pagar rest pose: tulang duplikat harus berimpit dengan tulang model,
        // karena boneInverses milik mesh hanya sah dipakai pada tulang model
        // bila rest pose keduanya sama. Kalau meleset, hasilnya terpelintir.
@@ -209,7 +236,7 @@ js = r""" // RIG_ALL_V86 - sambungkan semua mesh sekaligus ke rangka model.
    if(typeof updateSkeletonVisualV23==='function')updateSkeletonVisualV23();
    const bagian=[disambung+' mesh disambung'];
    if(sudahBenar)bagian.push(sudahBenar+' sudah benar');
-   if(dilewatiNama)bagian.push(dilewatiNama+' nama tulang tak cocok');
+   if(dilewatiNama)bagian.push(dilewatiNama+' nama tulang tak cocok'+(pesanNama?(' ('+pesanNama+')'):''));
    if(dilewatiPose)bagian.push(dilewatiPose+' rest pose beda'+(pesanPose?(' ('+pesanPose+')'):''));
    if(polos)bagian.push(polos+' mesh polos perlu Bind manual');
    if(dibuang)bagian.push(dibuang+' pohon duplikat dibuang');

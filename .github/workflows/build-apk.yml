@@ -117,6 +117,7 @@ jobs:
           python3 tools/patch_alpha_mask_v87.py
           python3 tools/patch_texture_badge_v88.py
           python3 tools/patch_texture_remove_v89.py
+          python3 tools/patch_bone_remove_skin_v90.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -324,6 +325,17 @@ jobs:
           ! grep -q "TEXTURE_REMOVE_V89" app/src/main/assets/auto.html
           ! grep -q "TEXTURE_REMOVE_V89" app/src/main/assets/index.html
           ! grep -q "TEXTURE_REMOVE_V89" app/src/main/assets/create.html
+          grep -q "BONE_REMOVE_SKIN_V90" app/src/main/assets/animation.html
+          grep -q "removeBoneV90" app/src/main/assets/animation.html
+          grep -q "pindahBobotKeIndukV90" app/src/main/assets/animation.html
+          grep -q "padatkanRangkaV90" app/src/main/assets/animation.html
+          grep -q "kembalikanRangkaV90" app/src/main/assets/animation.html
+          grep -q "recordRemoveV29(removeBoneV90)" app/src/main/assets/animation.html
+          ! grep -q "recordRemoveV29(removeBoneV24)" app/src/main/assets/animation.html
+          grep -q "recordRemoveV29(removeBoneV24)" app/src/main/assets/auto.html
+          ! grep -q "BONE_REMOVE_SKIN_V90" app/src/main/assets/auto.html
+          ! grep -q "BONE_REMOVE_SKIN_V90" app/src/main/assets/index.html
+          ! grep -q "BONE_REMOVE_SKIN_V90" app/src/main/assets/create.html
           ! grep -q "anim-lib-" app/src/main/assets/animation.html
           ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
           ! grep -q "anim_library.glb" app/src/main/assets/animation.html

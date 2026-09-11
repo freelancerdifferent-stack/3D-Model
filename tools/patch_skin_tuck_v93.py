@@ -38,6 +38,12 @@
 # Posisi asli disimpan, jadi bisa dikembalikan. Tombol yang sama berubah menjadi
 # "Kembalikan Kulit" untuk mesh yang sudah dirapikan.
 #
+# Sinar TIDAK ditembakkan ke seluruh mesh pakaian satu per satu. Cara itu sudah
+# dicoba dan terukur: 54.402 verteks x 36 mesh memakan 1221 detik - dua puluh
+# menit untuk satu kali tekan tombol. Sebagai gantinya seluruh segitiga pakaian
+# dimasukkan sekali ke dalam grid ruang, lalu tiap verteks hanya menguji
+# segitiga di sel yang dilalui ruas sinarnya.
+#
 # Hanya animation.html yang disentuh.
 
 from pathlib import Path
@@ -123,6 +129,37 @@ function pakaianV93(kulit,akar){
   });
   return keluar;
 }
+// Seluruh segitiga pakaian dikumpulkan sekali ke ruang dunia, lalu didaftarkan
+// ke sel grid yang ditumpuk kotak batasnya. Sesudah ini, mencari permukaan di
+// sekitar satu verteks tidak lagi menelusuri semua mesh - cukup beberapa sel.
+function gridPakaianV93(baju,sel){
+  const kotak=new Map(), tri=[];
+  const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3();
+  for(const m of baju){
+    const g=m.geometry, pos=g.getAttribute('position');
+    if(!pos)continue;
+    m.updateMatrixWorld(true);
+    const berkulit=!!(m.isSkinnedMesh&&m.skeleton&&g.getAttribute('skinIndex'));
+    const ambil=(i,v)=>{ v.fromBufferAttribute(pos,i);
+      if(berkulit)m.applyBoneTransform(i,v);
+      return v.applyMatrix4(m.matrixWorld); };
+    const idx=g.index, n=idx?idx.count:pos.count;
+    for(let k=0;k+2<n;k+=3){
+      ambil(idx?idx.getX(k):k,a); ambil(idx?idx.getX(k+1):k+1,b); ambil(idx?idx.getX(k+2):k+2,c);
+      const id=tri.length/9;
+      tri.push(a.x,a.y,a.z,b.x,b.y,b.z,c.x,c.y,c.z);
+      const x0=Math.floor(Math.min(a.x,b.x,c.x)/sel), x1=Math.floor(Math.max(a.x,b.x,c.x)/sel);
+      const y0=Math.floor(Math.min(a.y,b.y,c.y)/sel), y1=Math.floor(Math.max(a.y,b.y,c.y)/sel);
+      const z0=Math.floor(Math.min(a.z,b.z,c.z)/sel), z1=Math.floor(Math.max(a.z,b.z,c.z)/sel);
+      for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)for(let z=z0;z<=z1;z++){
+        const kunci=x+'|'+y+'|'+z;
+        let d=kotak.get(kunci); if(!d){d=[];kotak.set(kunci,d)}
+        d.push(id);
+      }
+    }
+  }
+  return {kotak:kotak, tri:tri, sel:sel};
+}
 function rapikanKulitV93(kulit){
   const g=kulit.geometry, pos=g.getAttribute('position'), nor=g.getAttribute('normal');
   if(!pos||!nor)return {gagal:'mesh ini tidak punya posisi/normal'};
@@ -136,7 +173,11 @@ function rapikanKulitV93(kulit){
   const margin=skala*0.002;        // sisa ruang supaya tidak berdesir di batas
   const batas=skala*0.03;          // dorongan terjauh yang diizinkan
 
-  const sinar=new THREE.Raycaster();
+  const grid=gridPakaianV93(baju,jangkau);
+  if(!grid.tri.length)return {gagal:'pakaian tidak punya segitiga yang bisa diuji'};
+  const sinarRuas=new THREE.Ray();
+  const ta=new THREE.Vector3(), tb=new THREE.Vector3(), tc=new THREE.Vector3();
+  const kena3=new THREE.Vector3();
   const M=new THREE.Matrix4(), tmp=new THREE.Matrix4(), A=new THREE.Matrix4();
   const A3=new THREE.Matrix3();
   const p=new THREE.Vector3(), n=new THREE.Vector3(), asal=new THREE.Vector3();
@@ -157,17 +198,31 @@ function rapikanKulitV93(kulit){
 
     asal.copy(p).addScaledVector(n,jangkau);
     arah.copy(n).multiplyScalar(-1);
-    sinar.set(asal,arah);
-    sinar.far=jangkau*2;
-    const tumbukan=sinar.intersectObjects(baju,false);
-    // Hanya permukaan yang MENGHADAP KELUAR yang dianggap menutupi. Tanpa syarat
-    // ini, sinar yang masuk lewat sisi dalam sepatu atau sarung tangan mengenai
-    // dinding seberangnya dan menghasilkan dorongan sebesar panjang sinar.
-    let t=null;
-    for(const h of tumbukan){
-      if(!h.face)continue;
-      if(h.face.normal.clone().transformDirection(h.object.matrixWorld).dot(arah)>=0)continue;
-      t=jangkau-h.distance; break;
+    sinarRuas.set(asal,arah);
+    // Sel yang mungkin dilalui ruas sinar saja. Ruasnya pendek (2 x jangkau) dan
+    // sel selebar jangkau, jadi yang diperiksa paling banyak beberapa puluh sel.
+    const jauh=jangkau*2;
+    const ujungX=asal.x+arah.x*jauh, ujungY=asal.y+arah.y*jauh, ujungZ=asal.z+arah.z*jauh;
+    const sx0=Math.floor(Math.min(asal.x,ujungX)/jangkau), sx1=Math.floor(Math.max(asal.x,ujungX)/jangkau);
+    const sy0=Math.floor(Math.min(asal.y,ujungY)/jangkau), sy1=Math.floor(Math.max(asal.y,ujungY)/jangkau);
+    const sz0=Math.floor(Math.min(asal.z,ujungZ)/jangkau), sz1=Math.floor(Math.max(asal.z,ujungZ)/jangkau);
+    // backfaceCulling=true: hanya permukaan yang MENGHADAP KELUAR yang dihitung
+    // menutupi. Tanpa itu, sinar yang masuk lewat sisi dalam sepatu atau sarung
+    // tangan mengenai dinding seberangnya dan menghasilkan dorongan sebesar
+    // panjang sinar.
+    let t=null, dekat=Infinity;
+    const sudah=new Set();
+    for(let cx=sx0;cx<=sx1;cx++)for(let cy=sy0;cy<=sy1;cy++)for(let cz=sz0;cz<=sz1;cz++){
+      const daftar=grid.kotak.get(cx+'|'+cy+'|'+cz);
+      if(!daftar)continue;
+      for(const id of daftar){
+        if(sudah.has(id))continue; sudah.add(id);
+        const o=id*9, T=grid.tri;
+        ta.set(T[o],T[o+1],T[o+2]); tb.set(T[o+3],T[o+4],T[o+5]); tc.set(T[o+6],T[o+7],T[o+8]);
+        if(!sinarRuas.intersectTriangle(ta,tb,tc,true,kena3))continue;
+        const d=asal.distanceTo(kena3);
+        if(d<dekat){dekat=d;t=jangkau-d}
+      }
     }
     if(t===null){terbuka++;continue}          // tidak tertutup apa pun: biarkan
     // t = letak permukaan baju sepanjang +n dihitung dari kulit.

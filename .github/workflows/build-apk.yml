@@ -119,6 +119,7 @@ jobs:
           python3 tools/patch_texture_remove_v89.py
           python3 tools/patch_bone_remove_skin_v90.py
           python3 tools/patch_rig_force_v91.py
+          python3 tools/patch_rig_force_tidy_v92.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -345,6 +346,13 @@ jobs:
           ! grep -q "RIG_FORCE_V91" app/src/main/assets/auto.html
           ! grep -q "RIG_FORCE_V91" app/src/main/assets/index.html
           ! grep -q "RIG_FORCE_V91" app/src/main/assets/create.html
+          grep -q "RIG_FORCE_TIDY_V92" app/src/main/assets/animation.html
+          grep -q "buangAkarKosongV92" app/src/main/assets/animation.html
+          grep -q "akarAsingV92" app/src/main/assets/animation.html
+          grep -q "onclick=pasangPaksaRapiV92" app/src/main/assets/animation.html
+          ! grep -q "RIG_FORCE_TIDY_V92" app/src/main/assets/auto.html
+          ! grep -q "RIG_FORCE_TIDY_V92" app/src/main/assets/index.html
+          ! grep -q "RIG_FORCE_TIDY_V92" app/src/main/assets/create.html
           ! grep -q "anim-lib-" app/src/main/assets/animation.html
           ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
           ! grep -q "anim_library.glb" app/src/main/assets/animation.html

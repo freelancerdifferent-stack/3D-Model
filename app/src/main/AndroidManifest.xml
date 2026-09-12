@@ -4,7 +4,9 @@
 
     <application
         android:allowBackup="true"
-        android:label="3D Model"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="DFS 3D Model"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity

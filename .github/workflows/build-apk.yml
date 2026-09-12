@@ -362,6 +362,14 @@ jobs:
           ! grep -q "SKIN_TUCK_V93" app/src/main/assets/auto.html
           ! grep -q "SKIN_TUCK_V93" app/src/main/assets/index.html
           ! grep -q "SKIN_TUCK_V93" app/src/main/assets/create.html
+          grep -q 'android:label="DFS 3D Model"' app/src/main/AndroidManifest.xml
+          grep -q 'android:icon="@mipmap/ic_launcher"' app/src/main/AndroidManifest.xml
+          grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' app/src/main/AndroidManifest.xml
+          test -f app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          test -f app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          test -f app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+          test -f app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+          test -f app/src/main/res/values/ic_launcher_background.xml
           ! grep -q "anim-lib-" app/src/main/assets/animation.html
           ! grep -q "animLibBtnV52" app/src/main/assets/animation.html
           ! grep -q "anim_library.glb" app/src/main/assets/animation.html

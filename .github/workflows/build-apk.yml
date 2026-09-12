@@ -28,6 +28,9 @@ jobs:
           cp -R node_modules/assimpjs/dist "$GITHUB_WORKSPACE/app/src/main/assets/vendor/assimpjs/dist"
       - name: Apply editor pipeline
         run: |
+          # DEPTH_PRECISION_V96 harus jalan SEBELUM mesin mana pun dipecah dari
+          # index.html, kalau tidak hanya mesin edit yang ikut berubah.
+          python3 tools/patch_depth_precision_v96.py
           python3 tools/patch_fbx_assimp.py
           python3 tools/patch_fbx_viewer_repair_v38.py
           python3 tools/patch_layers_v2.py
@@ -122,6 +125,7 @@ jobs:
           python3 tools/patch_rig_force_tidy_v92.py
           python3 tools/patch_skin_tuck_v93.py
           python3 tools/patch_mesh_scale_slider_v94.py
+          python3 tools/patch_drop_tuck_button_v95.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -356,7 +360,6 @@ jobs:
           ! grep -q "RIG_FORCE_TIDY_V92" app/src/main/assets/index.html
           ! grep -q "RIG_FORCE_TIDY_V92" app/src/main/assets/create.html
           grep -q "SKIN_TUCK_V93" app/src/main/assets/animation.html
-          grep -q 'id="meshTuckBtn"' app/src/main/assets/animation.html
           grep -q "rapikanKulitV93" app/src/main/assets/animation.html
           grep -q "kembalikanKulitV93" app/src/main/assets/animation.html
           grep -q "gridPakaianV93" app/src/main/assets/animation.html
@@ -370,6 +373,13 @@ jobs:
           ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/auto.html
           ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/index.html
           ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/create.html
+          grep -q "DROP_TUCK_BUTTON_V95" app/src/main/assets/animation.html
+          ! grep -q 'id="meshTuckBtn"' app/src/main/assets/animation.html
+          for m in index create auto animation; do
+            grep -q "DEPTH_PRECISION_V96" app/src/main/assets/$m.html
+            grep -q "camera.near=Math.max(.005,maxDim/150)" app/src/main/assets/$m.html
+            ! grep -q "maxDim/1000" app/src/main/assets/$m.html
+          done
           grep -q 'android:label="DFS 3D Model"' app/src/main/AndroidManifest.xml
           grep -q 'android:icon="@mipmap/ic_launcher"' app/src/main/AndroidManifest.xml
           grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' app/src/main/AndroidManifest.xml

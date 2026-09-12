@@ -121,6 +121,7 @@ jobs:
           python3 tools/patch_rig_force_v91.py
           python3 tools/patch_rig_force_tidy_v92.py
           python3 tools/patch_skin_tuck_v93.py
+          python3 tools/patch_mesh_scale_slider_v94.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -362,6 +363,13 @@ jobs:
           ! grep -q "SKIN_TUCK_V93" app/src/main/assets/auto.html
           ! grep -q "SKIN_TUCK_V93" app/src/main/assets/index.html
           ! grep -q "SKIN_TUCK_V93" app/src/main/assets/create.html
+          grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/animation.html
+          grep -q 'id="meshGeserV94"' app/src/main/assets/animation.html
+          grep -q "geserMeshV94" app/src/main/assets/animation.html
+          grep -q "asliGeserV94" app/src/main/assets/animation.html
+          ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/auto.html
+          ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/index.html
+          ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/create.html
           grep -q 'android:label="DFS 3D Model"' app/src/main/AndroidManifest.xml
           grep -q 'android:icon="@mipmap/ic_launcher"' app/src/main/AndroidManifest.xml
           grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' app/src/main/AndroidManifest.xml

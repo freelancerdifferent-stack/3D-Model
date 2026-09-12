@@ -126,6 +126,7 @@ jobs:
           python3 tools/patch_skin_tuck_v93.py
           python3 tools/patch_mesh_scale_slider_v94.py
           python3 tools/patch_drop_tuck_button_v95.py
+          python3 tools/patch_mesh_brush_v97.py
       - name: Mesin loader FBX
         run: node tools/fbx_loader_machine_v67.mjs --modules=/tmp/df3d-runtime/node_modules
       - name: Mesin ekstrak struktur bone
@@ -374,6 +375,13 @@ jobs:
           ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/index.html
           ! grep -q "MESH_SCALE_SLIDER_V94" app/src/main/assets/create.html
           grep -q "DROP_TUCK_BUTTON_V95" app/src/main/assets/animation.html
+          grep -q "MESH_BRUSH_V97" app/src/main/assets/animation.html
+          grep -q 'id="meshKuasBtnV97"' app/src/main/assets/animation.html
+          grep -q "usapKuasV97" app/src/main/assets/animation.html
+          grep -q "kuasV97" app/src/main/assets/animation.html
+          ! grep -q "MESH_BRUSH_V97" app/src/main/assets/auto.html
+          ! grep -q "MESH_BRUSH_V97" app/src/main/assets/index.html
+          ! grep -q "MESH_BRUSH_V97" app/src/main/assets/create.html
           ! grep -q 'id="meshTuckBtn"' app/src/main/assets/animation.html
           for m in index create auto animation; do
             grep -q "DEPTH_PRECISION_V96" app/src/main/assets/$m.html
